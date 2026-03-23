@@ -1,0 +1,57 @@
+---
+alwaysApply: true
+---
+
+# 프로젝트 폴더 구조
+
+## 표준 구조
+모든 프로젝트는 아래 구조를 따른다. 경로를 임의로 변경하지 않는다.
+
+```
+projects/
+  {nn}.{project-name}/        (예: 01.ems-transport)
+    context/
+      foundation/             ← 사용자 제공 (core-visual-tokens.json, icon-tokens.json)
+      figma-target.json       ← 사용자 제공
+      service-plan.md         ← /service-plan 출력
+      ia.md                   ← /ia-flow 출력
+      screen-specs/
+        {id}-{name}.md        ← /screen-spec 출력 (화면별)
+    design-system/
+      design-system.md        ← /design-system 출력
+      patterns/
+        _index.md             ← /design-system + /pattern-prompt 출력
+        patterns-prompt.md    ← /pattern-prompt 출력
+    prompt/
+      {id}-{name}-prompt.md   ← /screen-prompt 출력 (화면별)
+```
+
+## 네이밍 규칙
+- `nn` — 2자리 숫자 (01, 02, ...). 사용자가 지정한다
+- `project-name` — 영문 소문자, 하이픈 구분 (예: ems-transport, food-delivery)
+- `screen-id` — ia.md의 화면 ID 그대로 사용 (예: G1, L1, L2)
+
+## 경로 참조 방식
+커맨드에서 경로를 표기할 때 항상 아래 변수를 사용한다:
+- `{프로젝트 루트}` = `projects/{nn}.{project-name}`
+- `{컨텍스트}` = `{프로젝트 루트}/context`
+- `{디자인시스템}` = `{프로젝트 루트}/design-system`
+- `{프롬프트}` = `{프로젝트 루트}/prompt`
+
+## 단계별 산출물 위치 요약
+| 단계 | 커맨드 | 산출물 위치 |
+|------|--------|------------|
+| 기획 | /service-plan | `context/service-plan.md` |
+| IA | /ia-flow | `context/ia.md` |
+| 기능명세 | /screen-spec | `context/screen-specs/{id}-{name}.md` |
+| 디자인시스템 | /design-system | `design-system/design-system.md`, `design-system/patterns/_index.md` |
+| 화면 프롬프트 | /screen-prompt | `prompt/{id}-{name}-prompt.md` |
+| 패턴 프롬프트 | /pattern-prompt | `design-system/patterns/patterns-prompt.md`, `design-system/patterns/_index.md` |
+| Figma 패턴 빌드 | /build-patterns | Figma 실행 + `design-system/patterns/_index.md` nodeId 기입 |
+| Figma 화면 빌드 | /build-screen | Figma 실행 |
+| 검토 | /audit | 보고서 (파일 저장 없음) |
+
+## 금지
+- `projects/` 바로 아래에 파일 생성 금지
+- `context/`, `design-system/`, `prompt/` 외 임의 폴더 생성 금지
+- 산출물을 지정 위치 외 다른 폴더에 저장 금지

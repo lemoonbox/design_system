@@ -1,0 +1,29 @@
+---
+alwaysApply: true
+---
+
+# Figma 실행 원칙
+
+## 실행 전 필수 확인
+1. `get_document_info` → 현재 문서 확인
+2. `get_pages` → 작업 대상 페이지 확인 후 `set_current_page`
+3. 패턴 참조 시 → `get_local_components` 또는 `get_node_info`로 노드 ID 확인
+
+## 실행 순서 (항상 이 순서를 따른다)
+1. 외부 컨테이너 frame 생성 (`create_frame`)
+2. auto-layout 설정 (`set_auto_layout`)
+3. 주요 영역 frame 생성 및 배치
+4. 콘텐츠 요소 추가 (텍스트, 도형)
+5. 색상/스타일 적용
+6. 결과 검증 (`get_node_info`)
+
+## 안전 원칙
+- 노드 수정 전 반드시 `get_node_info`로 현재 상태 확인
+- 기존 노드 대량 삭제 전 `get_nodes_info`로 대상 목록 확인
+- 실행 후 `get_node_info`로 결과 검증
+
+## 실패 시
+- 오류 메시지를 그대로 보고한다
+- 부분 완료된 내용을 명시한다
+- 롤백이 필요하면 사용자에게 확인 후 `delete_node` 실행
+- 재시도는 1회. 동일 오류 반복 시 중단하고 보고한다

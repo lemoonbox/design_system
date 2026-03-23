@@ -1,0 +1,12 @@
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cursor IDE
+.cursor/projects/
+
+# figma-mcp (별도 저장소)
+figma-mcp/
