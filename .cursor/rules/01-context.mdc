@@ -11,9 +11,10 @@ alwaysApply: true
 
 ## 파일 읽기 우선순위
 1. 현재 커맨드에 명시된 입력 파일만 읽는다
-2. foundation/ 파일은 `/design-system` 단계에서만 읽는다
-3. 패턴은 `/build-screen` 실행 시 patterns/_index.md 먼저 확인하고, 필요한 패턴 파일만 개별 읽는다
-4. screen-specs는 현재 작업 대상 1개만 읽는다
+2. `foundation/` 파일은 `/design-system`, `/visual-direction` 단계에서만 읽는다
+3. `design-system.md`와 `visual-direction.mdc`는 05~09 커맨드 실행 전 읽는다 (각 커맨드의 "실행 전 읽기" 목록 참조)
+4. 패턴은 `/build-screen` 실행 시 patterns/_index.md 먼저 확인하고, 필요한 패턴 파일만 개별 읽는다
+5. screen-specs는 현재 작업 대상 1개만 읽는다
 
 ## 금지
 - 모든 스크린 스펙을 동시에 읽는 것

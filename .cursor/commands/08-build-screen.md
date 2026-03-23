@@ -1,6 +1,6 @@
 # /build-screen {screen-id}
 
-## ⚙️ 프로젝트 설정 (실행 전 여기를 먼저 채운다)
+## 프로젝트 설정 (실행 전 여기를 먼저 채운다)
 
 ```
 채널명:        ysm85zx5
@@ -12,93 +12,183 @@
 ---
 
 ## 목적
-`prompt/{screen-id}-*-prompt.md`를 읽고 위에서 지정한 부모 프레임 하위에 화면을 실행한다.
+화면 **디자인 명세서**(`prompt/{screen-id}-*-prompt.md`)를 읽고 Figma에 화면을 생성한다.
+**명세서에는 MCP 명령이 없다.** agent가 디자인 의도를 해석하고 `figma-tools.md`를 참조하여 실행 계획을 수립한다.
+
 프롬프트 파일이 없으면 먼저 `/screen-prompt {screen-id}`를 실행한다.
 
 ## 실행 전 읽기
-1. `projects/{nn}.{project-name}/prompt/{screen-id}-*-prompt.md` — 실행 지시 전체
-2. `.cursor/context/figma-tools.md` — 필요한 도구 확인
-
-design-system, screen-spec은 이미 프롬프트에 반영되어 있으므로 재읽기 금지.
+1. `{프로젝트}/prompt/{screen-id}-*-prompt.md` — **디자인 명세** (핵심 입력)
+2. `{프로젝트}/design-system/design-system.md` — 이펙트 토큰(shadow) 구체 값, 타이포 세밀값 확인
+3. `{프로젝트}/design-system/visual-direction.mdc` — 시각적 판단 기준
+4. `.cursor/context/figma-tools.md` — **MCP 도구, 파라미터, 제약 사항, 실행 패턴**
 
 ---
 
-## 실행 원칙
-- 프롬프트 파일의 순서를 그대로 따른다. 임의 변경 금지
-- 수치는 프롬프트 파일에 명시된 값만 사용한다
-- 단계마다 생성된 nodeId를 기록하여 다음 단계에서 parentId로 활용한다
+## 핵심 원칙: 디자인 명세 → 빌드 계획
+
+화면 디자인 명세는 **디자인 의도와 토큰 값**으로 작성되어 있다. MCP 명령은 없다.
+agent는 다음 순서로 실행 계획을 수립한다:
+
+### 1단계: 시각적 의도 파악
+명세의 "시각적 의도" 섹션을 읽고 **완성된 화면의 모습**을 머릿속에 그린다.
+- 전체 분위기는 어떤가?
+- 사용자의 시선이 먼저 가는 곳은?
+- 이 화면을 "잘 디자인했다"고 느끼게 할 포인트는?
+
+### 2단계: 레이아웃 분석
+명세의 "레이아웃 구조" 섹션과 ASCII 다이어그램에서 frame 계층을 도출한다:
+- 화면 최상위 frame → 영역 frame → 하위 frame → 요소 순서로 트리 구성
+- 각 영역 표의 속성을 MCP 파라미터로 변환:
+  - "수직 스택" → layoutMode: VERTICAL
+  - "수평 스택" → layoutMode: HORIZONTAL
+  - "양끝 정렬" → primaryAxisAlignItems: SPACE_BETWEEN
+  - "중앙 정렬" → CENTER, "시작 정렬" → MIN, "끝 정렬" → MAX
+
+### 3단계: 토큰 매핑
+각 요소의 색상·타이포·간격·깊이를 design-system.md에서 구체 값으로 확인한다:
+- shadow 토큰명 → `design-system.md` 이펙트 토큰 표에서 `set_effects` 파라미터 구성
+- 타이포 역할명 → `design-system.md` 타이포 세밀값 표에서 정확한 수치 확인
+
+### 4단계: MCP 도구 선택
+`figma-tools.md`에서 도구를 매칭한다. 반드시 확인할 섹션:
+- **생성·수정·텍스트 스타일** — 파라미터 정확한 형식 확인
+- **MCP 미지원 항목** — STRETCH/fill/hug/transparent 대체 방법
+- **실행 계획 패턴** — 카드 레이아웃, 아이콘 복제 등 시퀀스 참고
 
 ---
 
 ## 실행 흐름
 
 ### Step 1. 사전 확인
-이 파일 상단 **⚙️ 프로젝트 설정**의 값을 사용한다.
 
 ```
-join_channel → channel: "{ysm85zx5}"
-get_node_info → nodeId: "{65:4639}"
+join_channel → channel: "{채널명}"
+get_node_info → nodeId: "{부모 프레임 nodeId}"
 ```
 
-응답에서 다음 두 가지를 확인한다:
-1. 프레임이 존재하는지
-2. **기존 children의 배치 현황** — children 배열에서 각 child의 x, width를 읽어 현재 가장 오른쪽 끝 x 좌표(`nextX`)를 계산한다
+- 프레임 존재 확인
+- nextX 계산: `max(child.x + child.width) + 40` (없으면 0)
+- 오류 시 즉시 중단, nodeId 재확인 요청
+- 동일 화면 frame이 이미 존재 시 → 사용자에게 "덮어쓸까요, 새로 만들까요?" 확인
+
+### Step 2. 빌드 계획 수립
+
+디자인 명세를 해석하고 **실행 전에** 계획을 정리한다:
 
 ```
-nextX = max(child.x + child.width) + 40   // 기존 child가 없으면 nextX = 0
+빌드 계획 — {screen-id} {화면명}
+
+Phase 1: 구조
+1. 화면 frame — 390×844, {배경}, 수직 스택
+2. 헤더 영역 — {크기}, {배경}, {배치}
+3. 콘텐츠 영역 — {크기}, {배경}, {배치}
+4. 하단 CTA — {크기}, {배경}, {배치}
+
+Phase 2: 콘텐츠
+5. 헤더 텍스트·아이콘
+6. 패턴 적용: PAT-{ID} clone → insert → 텍스트 교체
+7. 직접 구현 요소: {목록}
+
+Phase 3: 시각 품질
+8. elevation 적용 — {대상별 shadow 토큰}
+9. 타이포 세밀값 확인 — 모든 텍스트에 font_name + line_height + letter_spacing
+10. surface depth 확인 — 인접 요소 fill 대비
+
+Phase 4: 검증
+11. export_node_as_image → 시각 확인
 ```
 
-화면 최상위 `create_frame`의 `parentId`는 부모 프레임 nodeId로, x는 `nextX`로 지정한다.
-x, y는 **부모 프레임 내부 좌표** 기준이다. 캔버스 절대 좌표로 지정하지 않는다.
+### Step 3. 실행
 
-> ⚠️ 프레임이 존재하지 않거나 오류가 나면 즉시 중단하고 사용자에게 nodeId 재확인을 요청한다.
-> 페이지를 새로 생성하거나 `set_current_page`를 호출하지 않는다.
+빌드 계획의 Phase 순서대로 실행한다.
 
-대상 화면 frame이 이미 존재하는 경우:
-```
-get_node_info → 기존 frame 확인
-```
-→ 기존 frame이 있으면 사용자에게 확인: "덮어쓸까요, 새로 만들까요?"
+#### Phase 1: 구조 (Structure)
+명세의 레이아웃 구조를 따라 frame 트리를 생성한다.
+- 화면 최상위 frame → 영역 frame → 하위 frame 순서
+- 각 frame에 auto-layout + padding + spacing 설정
+- fill color 적용 (투명은 `{r:0, g:0, b:0, a:0}` + 생성 후 fill 확인)
 
-### Step 2. 프롬프트 순서대로 실행
-프롬프트 파일의 "실행 순서" 섹션을 위에서 아래로 순서대로 실행한다.
+#### Phase 2: 콘텐츠 (Content)
+구조 위에 텍스트·아이콘·패턴을 배치한다.
 
-각 create 작업 후:
-- 반환된 nodeId를 메모
-- 다음 단계의 parentId에 사용
+**텍스트 생성 (모든 텍스트 노드에 필수)**:
+1. `create_text` — fontSize, fontWeight, fontColor
+2. `set_font_name` — fontFamily + style (400→Regular, 500→Medium, 600→SemiBold)
+3. `set_line_height` — 행간 (unit: PIXELS)
+4. `set_letter_spacing` — 자간 (unit: PIXELS)
 
-### Step 3. 패턴 적용
-프롬프트의 "사용 패턴" 표에 명시된 패턴 처리:
+**아이콘 배치** (`figma-tools.md` "아이콘 복제 후 컨테이너 삽입" 참조):
+1. `get_node_info` → figmaId 원본 구조 확인
+2. `clone_node` → 복제
+3. `insert_child` → 컨테이너 삽입
+4. `move_node` → (0,0) 재배치 (**필수**)
+5. `resize_node` → 크기 적용
+6. 색상 — 원본 구조에 따라:
+   - 단일 VECTOR: `set_fill_color` 직접
+   - GROUP/FRAME: children 탐색 → 각 path에 개별 적용
+   - 실패 시: `flatten_node` → 재시도, 또는 원본 유지 + 보고
+7. `get_node_info` → 검증
+
+**패턴 적용** (명세의 "사용 패턴" 표 참조):
+1. `get_node_info` → 패턴 노드 존재 확인
+2. `clone_node` → 복사
+3. `insert_child` → 대상 frame에 삽입
+4. `move_node` → 위치 조정
+5. 텍스트 교체: `scan_text_nodes` → 대상 텍스트 nodeId 확인 → `set_text_content` / `set_multiple_text_contents`
+6. 필요 시 색상·아이콘 교체
+
+> 패턴 노드 ID가 비어있으면 `/build-patterns`가 먼저 필요. 사용자에게 알리고 중단.
+
+#### Phase 3: 시각 품질 (Visual Polish)
+디자인 명세의 "시각 품질 검증" 섹션을 기준으로 품질을 확인하고 보정한다.
+
+**Elevation**:
+- 명세의 "Elevation" 표에 shadow 토큰이 명시된 모든 요소에 `set_effects` 적용
+- 구체 파라미터는 `design-system.md` 이펙트 토큰 표에서 가져온다
+- shadow와 stroke가 동시에 적용된 요소가 있으면 stroke 제거
+
+**Surface Depth**:
+- 명세의 "Surface Depth" 표에서 "부족" 판정된 요소 확인
+- 해당 요소의 fill color 보정 또는 border-subtle 적용
+
+**타이포 세밀값**:
+- 모든 텍스트 노드를 `scan_text_nodes`로 확인
+- set_font_name + set_line_height + set_letter_spacing가 빠진 텍스트 보완
+
+### Step 4. 시각 검증 (필수)
+
 ```
-get_node_info → 패턴 노드 존재 확인
-clone_node → 복사
-insert_child → 대상 frame에 삽입
-move_node → 위치 조정 (필요 시)
-set_text_content → 실제 데이터로 텍스트 교체
+export_node_as_image → nodeId: {화면 frame}, format: PNG, scale: 2
 ```
 
-패턴 노드 ID가 _index.md에 비어있는 경우:
-→ `/build-patterns`가 먼저 실행되어야 한다. 사용자에게 알리고 중단한다.
-(패턴은 frame이므로 get_local_components로 검색 불가)
+디자인 명세의 **"시각적 의도"** 섹션과 대조하여 확인:
+- [ ] 전체 분위기가 "시각적 의도"와 일치하는가
+- [ ] focal point가 명확하게 눈에 들어오는가
+- [ ] 아이콘이 정상 렌더되는가 (단색 블록 아님)
+- [ ] 카드·모달에 shadow가 적용되어 깊이감이 있는가
+- [ ] 텍스트 위계가 명확한가 (제목 > 본문 > 보조)
+- [ ] 색상 계층이 구분되는가 (배경 → 카드 → 요소 → 텍스트)
 
-### Step 4. 검증
-```
-get_node_info → 최상위 frame 구조 확인
-```
+결과 이미지를 사용자에게 보여주고 확인한다.
+**문제 발견 시**: 수정 → 재검증 루프.
 
-선택:
-```
-export_node_as_image → 시각적 확인
-```
+---
+
+## 실행 규칙
+- `create_component` 절대 금지
+- x, y는 부모 프레임 내부 좌표 기준
+- 디자인 명세에 없는 시각적 선택이 필요하면 사용자에게 확인
+- MCP 미지원 값은 `figma-tools.md` 대체 방법 적용
 
 ---
 
 ## 완료 보고
 ```
 완료: {screen-id} — {화면명}
-생성된 frame nodeId: {id}
-사용된 패턴: {PAT-번호 목록 또는 "없음"}
-미사용 패턴: {있다면 PAT-번호, 사유}
+frame nodeId: {id}
+사용 패턴: {PAT 목록 또는 "없음"}
+시각 검증: {통과 / 수정 사항}
 이슈: {있다면 구체적으로}
 ```
 

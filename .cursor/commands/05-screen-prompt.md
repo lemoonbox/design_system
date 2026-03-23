@@ -1,174 +1,194 @@
 # /screen-prompt {screen-id}
 
 ## 목적
-단일 화면의 Figma 실행 프롬프트 파일을 생성한다.
-실행 전 계획 문서이므로 Figma는 건드리지 않는다.
+단일 화면의 **디자인 명세서**를 작성한다.
+이 파일은 Figma MCP 명령이 아니라 **UI 디자인 자체** — 레이아웃·시각 위계·토큰 사용·품질 기준을 기술한다.
+빌드 agent는 이 명세를 읽고 `figma-tools.md`를 참조하여 실행 계획을 수립한다.
 
 ## 실행 전 읽기 (이 순서로)
-1. `projects/{nn}.{project-name}/design-system/design-system.md` — 색상·타이포·간격·**이펙트 토큰(shadow)**·**타이포 세밀값(행간/자간)**·테두리 전체
-2. `projects/{nn}.{project-name}/context/screen-specs/{screen-id}-*.md` — 이 화면의 기능명세
-3. `projects/{nn}.{project-name}/design-system/patterns/_index.md` — 적용 가능한 패턴 및 노드 ID 확인
-   (`/build-patterns` 실행 전이라면 노드 ID는 비어있음. 플레이스홀더로 남겨둔다)
-4. `projects/{nn}.{project-name}/context/foundation/icon-tokens.json` — **아이콘 figmaId 조회**
-   화면에 필요한 아이콘을 이 파일에서 찾아 figmaId를 프롬프트에 명시한다
+1. `{프로젝트}/design-system/visual-direction.mdc` — 비주얼 톤·강조 방식·밀도·elevation 방향 (최우선)
+2. `{프로젝트}/design-system/design-system.md` — 색상·타이포·간격·이펙트 토큰·타이포 세밀값
+3. `{프로젝트}/context/screen-specs/{screen-id}-*.md` — 이 화면의 기능명세
+4. `{프로젝트}/design-system/patterns/_index.md` — 적용 가능한 패턴 및 노드 ID
+5. `{프로젝트}/context/foundation/icon-tokens.json` — 아이콘 figmaId 조회
 
-읽기 후 Figma는 실행하지 않는다. 프롬프트 파일만 작성한다.
+Figma는 실행하지 않는다. 디자인 명세만 작성한다.
 
 ---
 
-## 작성 원칙
+## 작성 철학
 
-**구체적으로 작성한다.** 추상적 지시 금지.
-- ❌ "헤더를 만든다"
-- ✅ "헤더 frame: width 390, height 56, fillColor gray.900(#1d2939), auto-layout HORIZONTAL, paddingLeft 16, paddingRight 16, counterAxisAlignItems CENTER"
+**이 파일은 디자인 명세서다. MCP 실행 스크립트가 아니다.**
 
-**모든 수치는 design-system.md에서 가져온다.**
-임의의 숫자 사용 금지. 팔레트 키와 hex를 함께 표기한다.
+빌드 agent가 이 명세를 읽었을 때:
+1. 화면이 **어떻게 보이고 느껴져야 하는지** 명확히 그릴 수 있어야 한다
+2. 각 요소의 **시각적 역할과 위계**를 이해할 수 있어야 한다
+3. **design-system.md의 어떤 토큰**을 어디에 쓰는지 알 수 있어야 한다
+4. **visual-direction.mdc의 디자인 결정**이 이 화면에 어떻게 적용되는지 알 수 있어야 한다
 
-**elevation 적용 필수:**
-카드·입력창·모달·플로팅 요소는 반드시 design-system의 shadow 토큰을 `set_effects`로 적용한다.
-shadow와 stroke를 동시에 쓰지 않는다 — 둘 중 하나 선택.
+### 기술 규칙
+- MCP 명령어 금지 (`create_frame`, `set_auto_layout`, `set_effects` 등 사용하지 않는다)
+- 디자인 언어로 기술한다: "카드형 컨테이너", "수직 스택", "양끝 정렬" 등
+- 모든 수치는 design-system.md 토큰명 + 값을 병기한다
+- 색상은 **역할명 — 팔레트키 hex (rgba)** 형식으로 표기한다
 
-**타이포 세밀값 필수:**
-모든 텍스트 노드에 `set_line_height`와 `set_letter_spacing`을 적용한다.
-design-system의 "타이포그래피 세밀값" 표 값을 사용한다. 생략 금지.
+### 디자인 품질 원칙
 
-**아이콘 사용 원칙:**
-- 아이콘 슬롯을 빈 placeholder frame으로 두지 않는다
-- `icon-tokens.json`의 `icon.baseicon.tokens` 또는 `icon.feedback.tokens`에서 맥락에 맞는 아이콘을 찾아 `figmaId`를 확인한다
-- 프롬프트에 아이콘 이름과 figmaId를 명시하고, 실행 지시는 아래 시퀀스로 작성한다:
-  ```
-  clone_node → nodeId: "{figmaId}"    ← icon-tokens.json의 figmaId
-  insert_child → parentId: {아이콘 컨테이너 nodeId}
-  resize_node → width: {size}, height: {size}   ← 20 또는 24
-  set_fill_color → 아이콘 색상 (맥락에 맞는 색상 토큰)
-  ```
-- 적합한 아이콘이 없을 때만 빈 frame으로 남기고 이유를 명시한다
+**시각적 유려함이 핵심이다.** 구조가 맞아도 시각적으로 허하면 실패다.
 
-**패턴 사용 판단:**
-- 자연스럽게 맞으면 사용 → 패턴 노드 ID와 함께 명시
-- 화면 의도를 해치면 미사용 → 이유 명시하고 직접 구조 작성
+- **Surface Depth**: 배경 → 카드 → 요소 → 텍스트의 4단계 색상 계층을 유지한다. 인접한 두 요소가 동일 fill을 갖지 않도록 한다
+- **Elevation**: 카드·모달·CTA 바에는 design-system 이펙트 토큰을 명시한다. shadow와 stroke를 동시에 쓰지 않는다 — 둘 중 하나 선택
+- **타이포 위계**: 한 화면에 텍스트 크기 3단계 이하. 같은 위계 내에서는 color로 강조한다
+- **시각적 초점**: 화면당 focal point 1개를 명확히 지정한다
+- **밀도**: visual-direction.mdc의 밀도 기준에 따라 터치 타겟, 여백 리듬을 검증한다
+- **아이콘**: 빈 placeholder 금지. icon-tokens.json에서 맥락에 맞는 아이콘을 찾아 figmaId를 명시한다
 
 ---
 
 ## 출력: prompt/{id}-{name}-prompt.md
 
 ```markdown
-# Figma 실행 프롬프트 — {ID} {화면명}
+# 디자인 명세 — {ID} {화면명}
 
-## 사전 확인
-- 문서: (figma-target.json의 fileKey)
-- 페이지: (작업할 페이지명)
-- 화면 frame 이름: "{ID}-{화면명}"
-- 디바이스 기준: (예: 390×844 모바일)
+## 화면 개요
+- **목적**: (이 화면이 존재하는 이유 한 문장)
+- **디바이스**: 390 × 844 모바일
+- **사용자 맥락**: (이 화면을 언제, 어떤 상황에서 보는지)
+- **핵심 행동**: (이 화면에서 사용자가 반드시 해야 할 한 가지)
 
-## 사용 아이콘
-| 위치 | 아이콘명 | figmaId | 크기 | 색상 |
-|------|---------|---------|------|------|
-| 헤더 뒤로가기 | chevronLeft | 2:XXX | 24×24 | text-primary |
-| 동기화 상태 | cloudOff | 2:XXX | 20×20 | error |
+## 시각적 의도
 
-## 사용 패턴
-| PAT ID | 패턴명 | 적용 위치 | Figma 노드 ID |
-|--------|--------|----------|--------------|
-| PAT-001 | row-data-item | 목록 각 행 | (노드ID) |
+> 이 화면이 완성되었을 때 **어떻게 보이고 느껴져야 하는지** 서술한다.
+> visual-direction.mdc의 비주얼 톤을 이 화면에 구체적으로 적용한 기술.
 
-## 미사용 패턴 및 사유
-| PAT ID | 사유 |
-|--------|------|
-| PAT-003 | 이 화면은 단일 항목 뷰어라 행 구조 불필요 |
+- **분위기**: (예: "깔끔하고 전문적인 대시보드. 정보는 카드 단위로 분리되어 빠르게 스캔 가능")
+- **시각적 초점 (focal point)**: (예: "중앙의 환자 상태 카드가 시선을 먼저 잡는다")
+- **색상 톤**: (예: "배경은 중립적, 카드는 white + shadow, 상태만 컬러 강조")
+- **밀도**: (예: "중간. 한 눈에 파악, 장갑 터치 대응 44px 최소 타겟")
+- **디자인 핵심**: (이 화면을 '잘 디자인했다'고 느끼게 할 1~2가지 포인트.
+  예: "카드의 은은한 shadow가 깊이감을 주고, 상태 배지의 색상+아이콘 조합이 전문적이다")
 
 ---
 
-## 실행 순서
+## 사용 패턴
 
-### 1. 문서 준비
-- get_document_info
+| PAT ID | 패턴명 | 적용 위치 | Figma 노드 ID |
+|--------|--------|----------|--------------|
+| PAT-{ID} | {이름} | {이 화면에서 어디에 배치} | {nodeId 또는 "build 후 기입"} |
 
-### 2. 화면 외부 frame
-- create_frame
-  - name: "{ID}-{화면명}"
-  - parentId: {부모 프레임 nodeId — 08-build-screen 설정값}
-  - x: {nextX — 08 Step 1에서 계산}, y: 0
-  - width: 390, height: 844
-  - fillColor: background(#ffffff)
-- set_auto_layout
-  - layoutMode: VERTICAL
-  - paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0
-  - itemSpacing: 0
+## 미사용 패턴 및 사유
 
-### 3. 헤더 영역
-- create_frame
-  - name: "header"
-  - parentId: {화면 frame ID}
-  - width: 390, height: 56
-  - fillColor: {팔레트키}(#{hex})
-- set_auto_layout
-  - layoutMode: HORIZONTAL
-  - paddingLeft: 16, paddingRight: 16
-  - counterAxisAlignItems: CENTER
-  - primaryAxisAlignItems: SPACE_BETWEEN
-- create_text
-  - name: "header-title"
-  - parentId: header frame ID
-  - text: "{화면 제목}"
-  - fontSize: {heading 크기}px
-  - fontWeight: {heading 굵기}
-  - fontColor: text-primary(#{hex})
-- set_line_height → {heading line-height값}, unit: PIXELS
-- set_letter_spacing → {heading letter-spacing값}, unit: PIXELS
+| PAT ID | 사유 |
+|--------|------|
+| PAT-{ID} | {이 화면에서 사용하지 않는 이유} |
 
-(헤더에 아이콘이 있는 경우 — "사용 아이콘" 표 참조)
-- clone_node → nodeId: "{figmaId}"        ← icon-tokens.json figmaId
-- insert_child → parentId: header frame ID
-- resize_node → width: 24, height: 24
-- set_fill_color → {맥락 색상 r/g/b/a}
+## 사용 아이콘
 
-### 4. {주요 콘텐츠 영역명}
-(screen-spec의 레이아웃 구조와 데이터 필드 기준으로 작성)
+| 위치 | 아이콘명 | figmaId | 크기 | 색상 역할 |
+|------|---------|---------|------|----------|
+| {슬롯명} | {icon-tokens.json 키} | {figmaId} | 20×20 또는 24×24 | {역할} — {팔레트키} {hex} (rgba) |
 
-- create_frame
-  - name: "content"
-  - parentId: 화면 frame ID
-  - width: 390, height: {가변 or 고정값}
-  - fillColor: surface(#{hex})
-- set_auto_layout
-  - layoutMode: VERTICAL
-  - paddingTop: {spacing값}, paddingBottom: {spacing값}
-  - paddingLeft: {spacing값}, paddingRight: {spacing값}
-  - itemSpacing: {spacing값}
-- set_effects → shadow-sm (카드인 경우: design-system 이펙트 토큰 값 사용)
-- set_corner_radius → {카드 radius값}
+---
 
-#### 패턴 적용 (PAT-001 사용 시)
-- get_node_info → PAT-001 노드 확인
-- clone_node → PAT-001 복사
-- insert_child → content frame에 삽입
-- set_text_content → 실제 데이터로 텍스트 교체
+## 레이아웃 구조
 
-#### 직접 구현 (패턴 미사용 시)
-(구조를 단계별로 작성)
+### 전체 구조
 
-### 5. 하단 고정 영역 (있는 경우)
-- create_frame
-  - name: "bottom-bar"
-  - parentId: 화면 frame ID
-  - width: 390, height: {height}
-  - fillColor: surface(#{hex})
-- (버튼, 탭 등 내부 요소 구체적으로 기술)
+화면 배경: {역할} — {팔레트키} {hex}
 
-### 6. 검증
-- get_node_info → 최상위 frame 확인
-- export_node_as_image → 시각적 확인 (선택)
+```
+┌─────────────────────────────┐  390 × 844
+│ 헤더 영역                     │  h: 56px
+├─────────────────────────────┤
+│                              │
+│  메인 콘텐츠 (스크롤)          │
+│  ┌───────────────────────┐  │
+│  │  카드 A               │  │  surface + shadow.sm
+│  └───────────────────────┘  │
+│  ┌───────────────────────┐  │
+│  │  카드 B               │  │
+│  └───────────────────────┘  │
+│                              │
+├─────────────────────────────┤
+│ 하단 CTA                     │  shadow.md
+└─────────────────────────────┘
+```
+
+### {영역명}
+
+| 속성 | 값 |
+|------|-----|
+| 크기 | {width} × {height} px |
+| 배경 | {역할} — {팔레트키} {hex} (rgba) |
+| 배치 | 수직 스택 / 수평 스택 |
+| 주축 정렬 | 시작 / 중앙 / 끝 / 양끝 |
+| 교차축 정렬 | 시작 / 중앙 / 끝 |
+| 내부 여백 | 상{n} 하{n} 좌{n} 우{n} — {토큰명} |
+| 요소 간격 | {n}px — {토큰명} |
+| 모서리 | {n}px — {토큰명} 또는 없음 |
+| 깊이 | {shadow 토큰명} 또는 없음 |
+| 테두리 | 없음 또는 {역할} {두께} |
+
+#### 내부 요소
+
+| 요소 | 유형 | 내용 | 타이포 | 색상 |
+|------|------|------|-------|------|
+| {이름} | 텍스트 | "{실제 텍스트}" | {역할} — {크기}/{행간}/{자간} {굵기} | {역할} — {팔레트키} {hex} |
+| {이름} | 아이콘 | {아이콘명} ({figmaId}) {크기} | — | {역할} — {팔레트키} {hex} |
+| {이름} | 패턴 | PAT-{ID} {패턴명} | — | — |
+
+(각 영역을 위 형식으로 반복. 중첩 영역은 들여쓰기로 표현)
 
 ---
 
 ## 데이터 매핑
-(screen-spec의 데이터 필드가 이 화면 어디에 어떻게 표시되는지)
-| 필드명 | 표시 위치 | 표시 방식 | 색상 |
-|--------|----------|----------|------|
-| 환자명 | 헤더 제목 | text-xl, text-primary | #{hex} |
-| 상태 | 헤더 우측 | 배지, success 배경 | #{hex} |
+
+(screen-spec의 데이터 필드가 이 화면 어디에 어떤 형태로 표시되는지)
+
+| 데이터 필드 | 표시 위치 | 타이포 역할 | 색상 역할 | 비고 |
+|------------|----------|-----------|----------|------|
+| {필드명} | {영역 > 요소} | {타이포 역할} | {색상 역할} | {조건부 표시 등} |
+
+---
+
+## 시각 품질 검증
+
+### Surface Depth
+| 요소 | fill | 부모/인접 fill | 대비 | 조치 |
+|------|------|--------------|------|------|
+| 화면 배경 | {색상} | — | — | — |
+| 카드 A | {색상} | 화면 배경 | 충분/부족 | — 또는 보정 방안 |
+| 입력 필드 | {색상} | 카드 fill | 충분/부족 | — |
+
+### Elevation
+| 요소 | 유형 | shadow 토큰 | 근거 (visual-direction) |
+|------|------|------------|----------------------|
+| 카드 | 카드 | {shadow.sm 등} | "카드 = shadow.sm" |
+| 하단 CTA | 고정 바 | {shadow.md 등} | "CTA 바 = shadow.md" |
+| 모달 | 모달 | {shadow.lg 등} | "모달 = shadow.lg" |
+
+### 타이포 위계
+| 수준 | 역할 | 스펙 (크기/행간/자간/굵기) | 적용 요소 |
+|------|------|-------------------------|----------|
+| 1 (최강) | heading | 30/38/-0.6 SemiBold | 화면 제목 |
+| 2 (중간) | body-strong | 18/28/0 Medium | 카드 제목 |
+| 3 (보조) | caption | 14/20/0 Regular | 타임스탬프 |
+
+### 강조 검증
+- focal point: {요소} — {처리 방식} — {근거}
+- primary 사용: 화면 내 {n}곳 ({목록})
+- 상태 표현: 아이콘 + 색 + 문구 병행 여부
+
+### 밀도 검증
+- 터치 가능 요소: {요소명} — 높이 {n}px — {44px 충족 여부}
+- ❌ 미충족 시: {권장 조치}
+
+### 일관성 체크
+- [ ] 모든 색상이 design-system.md 팔레트 키 참조
+- [ ] 모든 타이포가 design-system.md 역할 표와 일치
+- [ ] 행간·자간이 design-system.md 세밀값 표와 일치
+- [ ] shadow는 design-system.md 이펙트 토큰 사용
+- [ ] visual-direction.mdc 확정 디자인 결정과 충돌 없음
 ```
 
 저장 위치: `projects/{nn}.{project-name}/prompt/{id}-{name}-prompt.md`

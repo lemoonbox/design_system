@@ -19,6 +19,7 @@ projects/
         {id}-{name}.md        ← /screen-spec 출력 (화면별)
     design-system/
       design-system.md        ← /design-system 출력
+      visual-direction.mdc    ← /visual-direction 출력
       patterns/
         _index.md             ← /design-system + /pattern-prompt 출력
         patterns-prompt.md    ← /pattern-prompt 출력
@@ -45,6 +46,7 @@ projects/
 | IA | /ia-flow | `context/ia.md` |
 | 기능명세 | /screen-spec | `context/screen-specs/{id}-{name}.md` |
 | 디자인시스템 | /design-system | `design-system/design-system.md`, `design-system/patterns/_index.md` |
+| 비주얼 디렉션 | /visual-direction | `design-system/visual-direction.mdc` |
 | 화면 프롬프트 | /screen-prompt | `prompt/{id}-{name}-prompt.md` |
 | 패턴 프롬프트 | /pattern-prompt | `design-system/patterns/patterns-prompt.md`, `design-system/patterns/_index.md` |
 | Figma 패턴 빌드 | /build-patterns | Figma 실행 + `design-system/patterns/_index.md` nodeId 기입 |

@@ -4,15 +4,29 @@ alwaysApply: true
 
 # 디자인 원칙
 
+## 프로젝트 파일 우선순위
+이 파일의 원칙은 전역 기본값이다. 커맨드 실행 시 아래 순서로 프로젝트별 파일이 이를 override한다.
+
+1. `{프로젝트}/design-system/visual-direction.mdc` — 비주얼 방향 및 톤 (최우선)
+2. `{프로젝트}/design-system/design-system.md` — 확정된 토큰 값 (색상·타이포·간격·이펙트)
+3. `{프로젝트}/context/foundation/` — 팔레트·아이콘·스케일 원본
+4. 이 파일 (`02-design.mdc`) — 전역 기본 원칙 (폴백)
+
+> **실행 원칙**: 커맨드 실행 전 현재 프로젝트의 `design-system.md`와 `visual-direction.mdc`를 먼저 확인한다.
+> 해당 파일이 없을 경우에만 이 파일의 기본 원칙을 따른다.
+
+---
+
 ## 토큰 사용
-- 색상은 반드시 프로젝트 foundation/core-visual-tokens.json 팔레트 값을 참조한다
-- raw hex 직접 사용 금지. 팔레트 키(예: brand.500, gray.200)로 추적하고, Figma 실행 시 해당 hex로 변환한다
-- 타이포그래피는 foundation에 정의된 스케일(display-md, text-sm 등) 범위 내에서 선택한다
-- 간격은 foundation spacing 토큰(xxs~9xl) 값을 기준으로 한다
+- 색상은 반드시 해당 프로젝트 `foundation/core-visual-tokens.json`의 팔레트 키를 참조한다
+- raw hex 직접 입력 금지. 팔레트 키(brand.500, gray.200 등)로 추적하고, Figma 실행 시 해당 hex로 변환한다
+- 타이포그래피 스케일은 해당 프로젝트 `design-system.md`에 확정된 역할(heading, body, caption 등)을 사용한다
+- 간격·반경은 해당 프로젝트 `design-system.md`의 spacing/radius 결정값을 기준으로 한다
+- shadow, border 등 이펙트 토큰은 해당 프로젝트 `design-system.md`의 이펙트 토큰 섹션을 따른다
 
 ## 패턴 원칙
 - 패턴은 컴포넌트로 만들지 않는다. 복사해서 쓸 수 있는 Figma 프레임으로 만든다
-- 화면 전체를 패턴화 하지 않는다. 2개 이상 화면에서 반복되는 UI 조각만 패턴화한다
+- 화면 전체를 패턴화하지 않는다. 2개 이상 화면에서 반복되는 UI 조각만 패턴화한다
 - 동일한 사용자 목표 + 동일한 데이터 구조 = 동일한 패턴 적용
 - 패턴 변형 시: 원형 구조를 유지하고 색상/텍스트/간격만 조정한다. 레이아웃 변경은 변형이 아니라 새 패턴이다
 
@@ -23,13 +37,18 @@ alwaysApply: true
 - 강조는 목적 기반. 색상만으로 상태를 구분하지 않는다 (형태/위치/크기 병행)
 
 ## 밀도
-- 정보 밀도는 사용자 사용 맥락(현장 작업 vs 데스크 작업)에 따라 결정한다
+- 정보 밀도 기준은 해당 프로젝트 `visual-direction.mdc`의 밀도/사용 맥락 설정을 따른다
+- `visual-direction.mdc`가 없으면 `service-plan.md`의 사용자 맥락(현장 작업 vs 데스크 작업 등)을 근거로 판단한다
 - 여백은 일관된 rhythm을 만든다. 임의 조절 금지
 
 ## 시각적 품질 (유려함)
-- **elevation**: 카드/모달/플로팅 요소는 반드시 design-system의 shadow 토큰을 적용한다 (`set_effects`)
+시각적 품질의 구체적 기준(elevation 강도, border 적용 여부, 색상 계층 방식 등)은
+해당 프로젝트의 `visual-direction.mdc`를 최우선으로 따른다.
+`visual-direction.mdc`가 없을 경우 아래 기본 원칙을 적용한다.
+
+- **elevation**: 카드/모달/플로팅 요소는 해당 프로젝트 `design-system.md`의 shadow 토큰을 적용한다 (`set_effects`)
 - **border**: 구분이 필요한 요소에는 stroke를 사용한다. shadow와 border를 동시에 쓰지 않는다 — 둘 중 하나 선택
-- **타이포 세밀값**: 행간(line-height)과 자간(letter-spacing)은 design-system에 정의된 값을 사용한다. 생략 금지
+- **타이포 세밀값**: 행간(line-height)과 자간(letter-spacing)은 해당 프로젝트 `design-system.md`에 정의된 값을 사용한다. 생략 금지
 - **색상 계층**: 화면 안에서 background → surface → element → text 4단계 계층을 유지한다. 인접한 두 요소가 동일한 fill color를 가지면 안 된다
-- **radius 일관성**: 같은 레벨의 요소는 같은 corner radius를 쓴다. 카드끼리, 버튼끼리 반드시 통일
+- **radius 일관성**: 같은 레벨의 요소는 같은 corner radius를 쓴다. 해당 프로젝트 `design-system.md`의 radius 결정값을 참조한다
 - **그라디언트 금지**: MCP에서 그라디언트 fill을 지원하지 않으므로 단색 fill만 사용한다. 깊이는 shadow로 표현한다

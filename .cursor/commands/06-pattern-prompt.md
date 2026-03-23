@@ -1,162 +1,177 @@
 # /pattern-prompt [PAT-ID]
 
 ## 목적
-`design-system.md`에 확정된 패턴을 바탕으로 **패턴 1개 = 파일 1개** 형태로 Figma 실행 프롬프트를 작성한다.
-`PAT-ID`를 지정하면 해당 패턴만, 생략하면 `_index.md`의 모든 패턴을 순서대로 생성한다.
-Figma는 건드리지 않는다. 프롬프트 파일만 작성한다.
+패턴 1개의 **디자인 명세서**를 작성한다.
+이 파일은 Figma MCP 명령이 아니라 **디자인 의도·레이아웃·토큰 사용**을 기술한다.
+빌드 agent는 이 명세를 읽고 `figma-tools.md`를 참조하여 실행 계획을 수립한다.
+
+`PAT-ID` 지정 시 해당 패턴만, 생략 시 `_index.md` 전체를 순서대로 생성한다.
+Figma는 건드리지 않는다. 디자인 명세만 작성한다.
 
 ## 실행 전 읽기 (이 순서로)
-1. `projects/{nn}.{project-name}/design-system/patterns/_index.md` — 패턴 목록·ID 확인
-2. `projects/{nn}.{project-name}/design-system/design-system.md` — 색상·타이포·간격·**이펙트 토큰**·**타이포 세밀값(행간/자간)** 전체
-3. `projects/{nn}.{project-name}/context/foundation/icon-tokens.json` — **아이콘 figmaId 조회**
-   패턴 내 아이콘 슬롯마다 맥락에 맞는 아이콘을 찾아 figmaId를 확인한다
-4. 해당 패턴의 등장 화면 screen-spec에서 **"패턴 후보" 섹션만** 읽기 (필요 시)
-
-읽기 후 Figma는 실행하지 않는다. 프롬프트 파일만 작성한다.
-
----
-
-## 파일 구조
-
-패턴별 파일은 `design-system/patterns/` 아래에 독립 파일로 저장한다.
-
-```
-design-system/patterns/
-├── _index.md                            ← 패턴 목록 + nodeId (빌드 후 기입)
-├── PAT-001-{패턴명}-prompt.md
-├── PAT-002-{패턴명}-prompt.md
-├── PAT-003-{패턴명}-prompt.md
-...
-```
+1. `{프로젝트}/design-system/patterns/_index.md` — 패턴 목록·ID 확인
+2. `{프로젝트}/design-system/design-system.md` — 색상·타이포·간격·이펙트 토큰·타이포 세밀값 전체
+3. `{프로젝트}/design-system/visual-direction.mdc` — 비주얼 톤·elevation 방향·강조 방식
+   (파일 없으면 `02-design.mdc` 기본 원칙을 따른다)
+4. `{프로젝트}/context/foundation/icon-tokens.json` — 아이콘 figmaId 조회
+5. 등장 화면 screen-spec의 "패턴 후보" 섹션 (필요 시)
 
 ---
 
-## 패턴 빌드 기준
+## 작성 철학
 
-### 포함 대상
-`_index.md`에 등록된 패턴만 생성한다.
-새 후보 발견 시: 사용자 확인 → 확정 후 `_index.md` 추가 → 파일 생성.
+**이 파일은 디자인 명세서다. MCP 실행 스크립트가 아니다.**
 
-### 패턴 단위 원칙
+빌드 agent가 이 명세를 읽었을 때:
+1. 패턴이 **어떻게 보여야 하는지** 명확히 그릴 수 있어야 한다
+2. 각 요소의 **시각적 역할과 위계**를 이해할 수 있어야 한다
+3. **design-system.md의 어떤 토큰**을 어디에 쓰는지 알 수 있어야 한다
+
+### 기술 규칙
+- MCP 명령어 금지 (`create_frame`, `set_auto_layout`, `set_effects` 등 사용하지 않는다)
+- 디자인 언어로 기술한다: "수평 배치", "양끝 정렬", "카드형 컨테이너" 등
+- 모든 수치는 design-system.md 토큰명 + 값을 병기한다
+- 색상은 **역할명 — 팔레트키 hex (rgba)** 형식으로 표기한다
+- 아이콘은 이름 + figmaId + 크기 + 색상 역할을 명시한다
+
+### 디자인 품질 원칙
+- **elevation**: 카드·배지·플로팅 요소는 design-system 이펙트 토큰을 명시한다. shadow와 stroke를 동시에 쓰지 않는다
+- **타이포 세밀값**: 모든 텍스트에 역할명·크기·행간·자간·굵기를 빠짐없이 기술한다
+- **Surface Depth**: 패턴 fill과 화면 배경의 대비를 검증한다. ΔE < 3이면 한 단계 진한 색상 또는 border-subtle 적용
+- **밀도**: 터치 가능 요소의 높이를 검증한다 (visual-direction.mdc 기준)
+- **시각적 위계**: focal point를 명확히 지정한다. 한 패턴 안에서 모든 요소가 동일한 무게를 갖지 않도록 한다
+
+---
+
+## 패턴 단위 원칙
 - 패턴 1개 = frame 1개 = 파일 1개
-- 변형: 색상·텍스트·간격 조정만 허용 → 동일 PAT ID, 변형 상태 표로 정리
+- 변형: 색상·텍스트·간격 조정만 → 동일 PAT ID, 변형 표로 정리
 - 레이아웃 구조 변경 = 새 PAT ID
-
-### 패턴화 금지 조건
-- 2개 미만 화면에서 반복
-- 복사 후 텍스트·색상 외 구조 변경 필요
-- 화면 전체 단위
+- 2개 미만 화면에서 반복되는 것은 패턴화하지 않는다
+- 화면 전체를 패턴화하지 않는다
 
 ---
 
-## 작성 원칙
-- 수치는 `design-system.md` 값만. 팔레트 키 + hex + r/g/b/a 함께 표기
-- `create_component` 절대 금지. `create_frame`만 사용
-- **elevation 필수**: 카드·모달·플로팅은 design-system 이펙트 토큰의 `set_effects` 적용
-- **타이포 세밀값 필수**: 모든 텍스트에 `set_line_height` + `set_letter_spacing` 적용 (생략 금지)
-- **아이콘 원칙**:
-  - 아이콘 슬롯을 빈 placeholder frame으로 두지 않는다
-  - `icon-tokens.json`에서 맥락에 맞는 아이콘을 찾아 `figmaId`를 확인한다
-    - 상태·피드백 아이콘: `icon.feedback.tokens` (alertCircle, alertTriangle, checkCircle, zap)
-    - 일반 UI 아이콘: `icon.baseicon.tokens` (cloud, cloudOff, chevronLeft, clock, check 등)
-  - 프롬프트에 아이콘 이름·figmaId를 명시하고 아래 시퀀스로 작성한다:
-    ```
-    clone_node   → nodeId: "{figmaId}"
-    insert_child → parentId: {아이콘 컨테이너 nodeId}
-    resize_node  → width: {size}, height: {size}   ← 20 또는 24
-    set_fill_color → {맥락 색상 r/g/b/a}
-    ```
-  - 적합한 아이콘이 없을 때만 빈 frame으로 남기고 이유를 명시한다
-- 패턴 간 종속성 없이 각 패턴이 독립 실행 가능하도록 작성
-
----
-
-## 출력: PAT-{ID}-{패턴명}-prompt.md 1개
+## 출력: PAT-{ID}-{패턴명}-prompt.md
 
 ```markdown
 # PAT-{ID} — {패턴명}
 
 ## 메타
 - 등장 화면: {화면 ID 목록}
-- 구조: (이 패턴이 어디서 어떻게 반복되는지 한 문장)
+- 역할: (이 패턴이 사용자에게 무엇을 전달하는지 한 문장)
+- 반복 구조: (어떤 화면의 어디에서 반복되는지)
+
+## 시각적 의도
+
+> 이 패턴이 완성되었을 때 어떻게 보여야 하는지.
+> "이 패턴은 ____처럼 보인다. 사용자의 시선은 먼저 ____로 간다."
+
+- **전체 인상**: (예: "컴팩트한 정보 행. 좌측 레이블과 우측 상태 배지가 한 줄에 대비된다")
+- **시각적 초점**: (예: "우측 동기화 배지. 배지 fill 색상 + 아이콘이 가장 눈에 띈다")
+- **시각적 무게**: (예: "좌측 텍스트 70% : 우측 배지 30%")
+- **디자인 핵심**: (이 패턴을 '잘 만들었다'고 느끼게 하는 1~2가지 포인트.
+  예: "배지의 부드러운 라운드 + 은은한 fill이 전문적인 인상을 준다")
+
+---
 
 ## 사용 아이콘
-| 위치 | 아이콘명 | figmaId | 크기 | 색상 |
-|------|---------|---------|------|------|
-| {슬롯명} | {icon-tokens.json의 키} | {figmaId} | 20×20 또는 24×24 | {색상 토큰} |
+
+| 위치 | 아이콘명 | figmaId | 크기 | 색상 역할 |
+|------|---------|---------|------|----------|
+| {슬롯명} | {icon-tokens.json 키} | {figmaId} | 20×20 | {역할} — {팔레트키} {hex} (rgba) |
 
 ---
 
-## Figma 실행 지시
+## 레이아웃 구조
 
-### 외부 frame
-\```
-create_frame
-  name: "PAT-{ID}-{패턴명}"
-  parentId: {부모 프레임 nodeId — 07-build-patterns 설정값}
-  x: {nextX}, y: 0
-  width: {값}, height: {값}
-  fillColor: {팔레트키} — {색상명} (r:{} g:{} b:{} a:1)
-\```
-\```
-set_auto_layout
-  layoutMode: HORIZONTAL / VERTICAL
-  paddingTop: {값}, paddingBottom: {값}
-  paddingLeft: {값}, paddingRight: {값}
-  itemSpacing: {값}
-  counterAxisAlignItems: CENTER / MIN / MAX
-\```
+### 전체 프레임 `{패턴명}`
 
-elevation (카드·모달·플로팅인 경우):
-\```
-set_corner_radius → radius: {값}
-set_effects
-  effects: [
-    { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:{alpha}}, offset:{x:0,y:{y}}, radius:{r}, spread:{s}, visible:true },
-    { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:{alpha}}, offset:{x:0,y:{y}}, radius:{r}, spread:{s}, visible:true }
-  ]
-\```
-> shadow 토큰 기준: design-system.md 이펙트 토큰 표 참조
+| 속성 | 값 |
+|------|-----|
+| 크기 | {width} × {height} px |
+| 배경 | {역할} — {팔레트키} {hex} (rgba) |
+| 배치 | 수직 스택 / 수평 스택 |
+| 주축 정렬 | 시작 / 중앙 / 끝 / 양끝 |
+| 교차축 정렬 | 시작 / 중앙 / 끝 |
+| 내부 여백 | 상{n} 하{n} 좌{n} 우{n} — {토큰명} |
+| 요소 간격 | {n}px — {토큰명} |
+| 모서리 | {n}px — {토큰명} 또는 없음 |
+| 깊이 | {shadow 토큰명} 또는 없음 |
+| 테두리 | 없음 또는 {색상 역할} {두께} |
 
----
+### 구조 다이어그램
 
-### {내부 요소명}
-\```
-create_frame / create_text / create_rectangle
-  name: "{이름}"
-  parentId: 외부 frame nodeId
-  ...
-\```
+```
+┌───────────────────────────────────┐  전체: {width}×{height}
+│ ┌─────────────────┐ ┌───────────┐ │
+│ │ {좌측 영역}       │ │ {우측 영역} │ │  수평, 양끝 정렬
+│ │                  │ │            │ │
+│ └─────────────────┘ └───────────┘ │
+└───────────────────────────────────┘
+```
 
-텍스트 노드마다:
-\```
-set_line_height    → lineHeight: {값}, unit: PIXELS
-set_letter_spacing → letterSpacing: {값}, unit: PIXELS
-\```
+### {하위 영역명}
 
-아이콘 노드 ("사용 아이콘" 표 참조):
-\```
-clone_node   → nodeId: "{figmaId}"             ← icon-tokens.json figmaId
-insert_child → parentId: {아이콘 컨테이너 nodeId}
-resize_node  → width: {size}, height: {size}
-set_fill_color → r:{} g:{} b:{} a:1            ← 맥락 색상 토큰 값
-\```
+| 속성 | 값 |
+|------|-----|
+| 크기 | ... |
+| 배경 | ... |
+| 배치 | ... |
+| ... | ... |
+
+#### 내부 요소
+
+| 요소 | 유형 | 내용 | 타이포 | 색상 |
+|------|------|------|-------|------|
+| {이름} | 텍스트 | "{실제 텍스트}" | {역할} — {크기}/{행간}/{자간} {굵기} | {역할} — {팔레트키} {hex} |
+| {이름} | 아이콘 | {아이콘명} ({figmaId}) {크기} | — | {역할} — {팔레트키} {hex} |
 
 ---
 
 ## 변형 상태
 
-| 상태명 | 변경 항목 | 값 |
-|--------|----------|-----|
-| 상태1 | fillColor | {팔레트키} (r:{} g:{} b:{} a:1) |
-| 상태2 | fontColor + opacity | {값} |
+| 상태명 | 변경 대상 | 변경 내용 |
+|--------|----------|----------|
+| {기본} | — | 위 레이아웃 그대로 |
+| {상태2} | {요소명} | 아이콘: {새 아이콘}({figmaId}) · 텍스트: "{새 텍스트}" · fill: {새 색상} |
+
 (레이아웃·구조 변경은 변형 아님 → 새 PAT ID)
 
 ---
 
+## 시각 품질 검증
+
+### Surface Depth
+| 요소 | fill | 부모/배경 fill | 대비 | 조치 |
+|------|------|--------------|------|------|
+| 전체 프레임 | {색상} | background {색상} | 충분/부족 | — 또는 보정 방안 |
+| {하위 요소} | {색상} | {부모 fill} | 충분/부족 | — |
+
+### Elevation
+| 요소 | 유형 | shadow 토큰 | 근거 (visual-direction) |
+|------|------|------------|----------------------|
+| ... | 카드/배지/헤더 등 | {토큰명} 또는 없음 | {근거 요약} |
+
+### 타이포 위계
+| 수준 | 역할 | 스펙 (크기/행간/자간/굵기) | 적용 요소 |
+|------|------|-------------------------|----------|
+| 1 (최강) | {역할} | {값} | {요소명} |
+| 2 | {역할} | {값} | {요소명} |
+| 3 (최약) | {역할} | {값} | {요소명} |
+
+### 강조
+- focal point: {요소} — {처리 방식}
+- 상태 표현: 아이콘 + 색 + 문구 병행 여부
+- 근거: visual-direction.mdc > {관련 섹션}
+
+### 밀도
+- 터치 가능 요소: {요소명} — 높이 {n}px — {44px 충족 여부}
+- ❌ 미충족 시: {권장 조치}
+
 ## 주의
-- create_component 금지
-- 생성 후 반환된 nodeId를 `_index.md`에 기입
+- 컴포넌트 변환 금지. frame으로만 생성
+- 생성 후 nodeId를 `_index.md`에 기입
 ```
 
 저장 위치: `projects/{nn}.{project-name}/design-system/patterns/PAT-{ID}-{패턴명}-prompt.md`

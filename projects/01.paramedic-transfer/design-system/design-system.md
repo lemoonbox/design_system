@@ -28,10 +28,6 @@
 | error | color.error.600 | #d92d20 | 오류·거절·파괴적 확인 |
 | error-subtle | color.error.50 | #fef3f2 | 오류 배너 배경 |
 
-**브랜드 방향**: foundation의 **brand(바이올렛 계열)** 를 primary로 사용한다. 상태는 **success / warning / error** 만으로 구분하지 말고 아이콘·문구를 병행한다(프로젝트 디자인 규칙).
-
-**포커스 링**: `effect.focus ring`의 `4px primary-100` 등 foundation 이펙트를 폼·주요 버튼에 적용 가능.
-
 ## 타이포그래피
 
 모든 스케일 **fontFamily: Inter**(foundation 기준). 앱 배포 시 플랫폼 정책에 따라 SF Pro / Roboto로 치환 가능.
@@ -135,10 +131,7 @@ effects: [
 | button | 16px | 24px | 0.1px | PIXELS |
 | meta | 12px | 18px | 0.1px | PIXELS |
 
-## 디자인 결정 (확정)
+---
 
-| 주제 | 결정 | 이유 요약 |
-|------|------|----------|
-| 페이지 배경 | **`color.gray.25` (#fdfdfd) 유지** | 카드·표면과 미세 대비, 현장·차량 등 조도 변화 시 화면 구역 구분 |
-| Accent | **`color.blue.600` (#1570ef) 유지** | primary(바이올렛)와 역할 분리, 거리·링크·정보 보조에 익숙한 블루 |
-| 화면 제목 크기 | **전역 `display sm` 30px 유지** | 현장에서 단계 인지용; 긴 제목 화면만 `text xl` semibold 예외(위 타이포 절 참고) |
+> 비주얼 방향(브랜드 톤, 레이아웃 스타일, 확정 디자인 결정 등)은
+> `design-system/visual-direction.mdc` 를 참조한다.

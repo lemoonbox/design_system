@@ -14,6 +14,8 @@ alwaysApply: true
 2. auto-layout 설정 (`set_auto_layout`)
 3. 주요 영역 frame 생성 및 배치
 4. 콘텐츠 요소 추가 (텍스트, 도형)
+   - 텍스트 노드: `create_text` 직후 `set_font_name` → fontFamily + style 지정 필수
+   - 투명 프레임: `create_frame` 직후 `get_node_info`로 fill 확인 → `#ffffff`이면 `set_fill_color a:0` 재적용
 5. 색상/스타일 적용
 6. 결과 검증 (`get_node_info`)
 
@@ -21,6 +23,7 @@ alwaysApply: true
 - 노드 수정 전 반드시 `get_node_info`로 현재 상태 확인
 - 기존 노드 대량 삭제 전 `get_nodes_info`로 대상 목록 확인
 - 실행 후 `get_node_info`로 결과 검증
+- `fillColor: transparent` 또는 `a:0`으로 지정해도 MCP가 `#ffffff`로 렌더할 수 있다. 생성 직후 반드시 fill 값 확인 후 필요 시 재적용
 
 ## 실패 시
 - 오류 메시지를 그대로 보고한다

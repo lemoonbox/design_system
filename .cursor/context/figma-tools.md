@@ -37,7 +37,7 @@
 
 | 도구 | 용도 | 주요 파라미터 |
 |------|------|--------------|
-| `create_frame` | 프레임 생성 (**레이아웃 기본 단위**) | x, y, width, height, name, parentId, fillColor{r,g,b,a} |
+| `create_frame` | 프레임 생성 (**레이아웃 기본 단위**) | x, y, width(숫자), height(숫자), name, parentId, fillColor{r,g,b,a}, strokeColor{r,g,b,a}, strokeWeight |
 | `create_rectangle` | 사각형 생성 | x, y, width, height, name, parentId |
 | `create_text` | 텍스트 생성 | x, y, text, fontSize, fontWeight, fontColor{r,g,b,a}, name, parentId |
 | `create_ellipse` | 원형 생성 | x, y, width, height, name, parentId, fillColor |
@@ -107,6 +107,25 @@
 
 ---
 
+## MCP 미지원 — 프롬프트 금지 항목
+
+아래 Figma 네이티브 개념은 현재 MCP에서 **지원하지 않는다**.
+프롬프트(06-pattern-prompt, 05-screen-prompt 등)에서 이 값들을 사용하지 않는다.
+
+| 미지원 값/도구 | 설명 | 대체 방법 |
+|---------------|------|-----------|
+| `counterAxisAlignItems: STRETCH` | auto-layout에서 자식이 cross-axis 방향으로 부모를 채움 | `MIN` 사용 + 자식 width를 부모 가용폭(부모width − paddingLeft − paddingRight)으로 `resize_node` |
+| `width: fill` / `height: fill` | auto-layout 자식이 주축/교차축 부모를 채움 | 부모 가용폭을 계산하여 숫자(px) 입력. 예: 부모 375, padding 16×2 → 자식 width: 343 |
+| `width: hug` / `height: hug` | 콘텐츠에 맞게 자동 크기 | auto-layout 설정 시 내부 콘텐츠가 크기를 결정. 초기값은 내부 요소 합산으로 계산하여 숫자 입력 |
+| `fillColor: transparent` (문자열) | 투명 배경 | `fillColor: {r:0, g:0, b:0, a:0}` RGBA 객체로 표기. 생성 후 `get_node_info`로 fill 확인 → `#ffffff`이면 `set_fill_color a:0` 재적용 |
+| `set_layout_grow` | auto-layout 자식의 flex-grow 제어 | 도구 없음. 공간 배분이 필요하면 부모에 `primaryAxisAlignItems: SPACE_BETWEEN` 사용, 또는 자식 width를 수동 계산 |
+| `set_layout_sizing` | 자식의 sizing mode(FILL/HUG/FIXED) 제어 | 도구 없음. 위 `width: fill` / `hug` 대체 방법과 동일 |
+| gradient fill | 그라디언트 채우기 | 단색 fill만 사용. 깊이감은 `set_effects`(shadow)로 표현 |
+
+> 이 표에 없는 도구/파라미터가 프롬프트에 등장하면 사용자에게 확인 후 진행한다.
+
+---
+
 ## 색상 변환 참고
 
 Figma 도구의 색상 파라미터는 0~1 범위 RGB를 사용한다.
@@ -152,6 +171,18 @@ insert_child (대상 frame에 삽입)
 move_node (위치 조정)
 set_text_content (텍스트 교체)
 ```
+
+### 아이콘 복제 후 컨테이너 삽입
+```
+get_node_info  → nodeId: {figmaId}                    ← 원본 존재 확인
+clone_node     → nodeId: {figmaId}, x:0, y:0          ← 복제 (절대 좌표에 생성됨)
+insert_child   → parentId: {컨테이너 nodeId}, childId: {clonedId}
+move_node      → nodeId: {clonedId}, x:0, y:0         ← 컨테이너 내부 (0,0)으로 재배치 (필수)
+resize_node    → nodeId: {clonedId}, width: {size}, height: {size}
+set_fill_color → nodeId: {clonedId}, r:{}, g:{}, b:{}, a:1
+get_node_info  → nodeId: {컨테이너 nodeId}              ← children 위치 검증
+```
+> `move_node`를 생략하면 복제된 아이콘이 원본의 절대 좌표에 남아 컨테이너 밖에 렌더된다. **반드시 포함한다.**
 
 ### 카드에 elevation 적용 (shadow-sm 예시)
 ```

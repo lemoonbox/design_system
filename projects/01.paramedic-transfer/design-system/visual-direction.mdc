@@ -1,0 +1,60 @@
+---
+description: 구급 이송 조율 모바일 앱 비주얼 디렉션
+---
+
+# Visual Direction — 구급 이송 조율 모바일 앱
+
+## 서비스 맥락
+- 사용자: 구급대원 (현장·이송 중 모바일 사용)
+- 사용 환경: 실외·차량 등 조도 변화 심한 환경, 장갑 착용 가능
+- 긴박도: 높음 — 정보 오인이 직결 위험, 빠른 판단 필요
+
+## 비주얼 톤
+**진중하고 명료한 전문가 도구.** 의료 기관급 신뢰감을 주면서 빠른 스캔이 가능한 UI.
+키워드: 신뢰, 명료, 효율
+
+- 장식적 그래픽·일러스트 사용 금지
+- 컬러 포인트는 최소화. 상태·행동에만 색상을 쓴다
+- 여백은 넓게. 조밀한 정보 나열보다 빠른 스캔 우선
+
+## 브랜드 방향
+- **Primary**: color.brand.600 (#7f56d9) — 주요 버튼, 진행·선택 강조
+- **Accent**: color.blue.600 (#1570ef) — 거리·링크·정보 등 2차 보조 강조. primary(바이올렛)와 역할 명확히 분리
+- **상태 색상 원칙**: success/warning/error 색상만으로 상태를 구분하지 않는다. 아이콘·문구를 반드시 병행
+
+## 밀도 & 레이아웃
+- **밀도**: 중간. 현장 장갑 조작을 고려해 터치 타겟 최소 44px 확보
+- 카드 중심 레이아웃. 한 화면에 한 가지 주요 목표
+- 하단 고정 CTA 패턴 유지 (단일 주요 버튼 + 안전 영역)
+- 화면 좌우 안전 영역: spacing.xl (16px)
+
+## Elevation & Surface
+- **스타일**: 소프트 — 그림자로 깊이 표현, 테두리와 병용하지 않는다
+- **Surface 계층**: background(color.gray.25 #fdfdfd) → surface(color.gray.50 #fafafa) → surface-raised(white #ffffff)
+- 인접한 두 요소의 fill color는 달라야 한다 (계층 유지)
+- elevation 용도별 shadow 기준:
+  - 카드·입력 필드 → effect.shadow.sm
+  - 하단 CTA 바·드롭다운 → effect.shadow.md
+  - 모달·시트 → effect.shadow.lg
+  - 플로팅 알림·오버레이 → effect.shadow.xl
+
+## 강조 방식
+- **크기 + 컬러 병행**: 타이포 크기 차이(heading → body)와 primary 컬러를 함께 사용
+- 강조 행동 요소(버튼)는 primary fill + text-on-primary 텍스트
+- 보조 정보는 text-secondary 컬러로 시각적 계층 유지
+
+## 타이포그래피 방향
+- **화면 제목**: display sm semibold (30px) 전역 유지 — 현장 단계 인지용, 전역 축소 금지
+  - 예외: 제목이 두 줄 이상 자주 넘치는 화면만 text xl semibold (20px) 허용
+- **폰트**: Inter (배포 시 플랫폼 정책에 따라 SF Pro / Roboto 치환 가능)
+- 행간·자간은 design-system.md의 타이포그래피 세밀값 섹션을 따른다
+
+## 확정 디자인 결정
+
+| 주제 | 결정 | 이유 요약 |
+|------|------|----------|
+| 페이지 배경 | color.gray.25 (#fdfdfd) | 카드·표면과 미세 대비, 조도 변화 시 화면 구역 구분 |
+| Accent 컬러 | color.blue.600 (#1570ef) | primary(바이올렛)와 역할 분리, 정보성 링크에 익숙한 블루 |
+| 화면 제목 크기 | 전역 display sm 30px 유지 | 현장 단계 인지; 긴 제목 화면만 text xl 예외 허용 |
+| 포커스 링 | effect.focus ring 4px primary-100 | 폼·주요 버튼에 시각적 포커스 명시 |
+| 상태 표시 | 색상 + 아이콘 + 문구 병행 | 색상만으로 구분 시 조도 변화 환경에서 오인 위험 |
