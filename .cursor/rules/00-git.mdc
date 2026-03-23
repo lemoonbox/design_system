@@ -1,0 +1,42 @@
+---
+description: Git 및 GitHub 저장소 정보
+globs:
+alwaysApply: true
+---
+
+# Git / GitHub 설정
+
+## 저장소 정보
+- **원격 저장소**: https://github.com/lemoonbox/design_system
+- **브랜치**: `master`
+- **로컬 경로**: `c:\Users\moon\My_project\app_design`
+
+## 자주 쓰는 명령어
+
+### Pull (최신 소스 받기)
+```powershell
+git pull origin master
+```
+
+### Push (변경사항 올리기)
+```powershell
+git add .
+git status
+git commit -m "커밋 메시지"
+git push origin master
+```
+
+### 상태 확인
+```powershell
+git status
+git log --oneline -10
+```
+
+## PowerShell 주의사항
+- `&&` 연산자 사용 불가 → `;` 으로 대체
+- heredoc(`<<'EOF'`) 문법 사용 불가 → `-m "메시지"` 직접 입력
+
+## .gitignore 제외 항목
+- `figma-mcp/` — 별도 git 저장소
+- `.cursor/projects/` — 로컬 IDE 메타데이터
+- `node_modules/`
