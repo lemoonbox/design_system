@@ -1,143 +1,82 @@
-# Design System — 구급 이송 조율 모바일 앱
+# Design System — 구급 이송 조율
 
-본 문서의 **팔레트 키·Hex·숫자**는 `context/foundation/core-visual-tokens.json`, 아이콘은 `context/foundation/icon-tokens.json`에서 읽은 값이다. foundation이 갱신되면 본 표의 Hex·px를 동기화한다.
-
-**토큰 경로 표기**: 색상 `color.{팔레트}.{단계}`, 간격 `spacing.{토큰명}`, 반경 `radius.{토큰명}`, 타이포는 Figma export 그대로 **`typography.{스케일}.{굵기}`** (스케일에 공백 있음, 예: `display sm`, `text md`).
+> foundation `core-visual-tokens.json`·`icon-tokens.json` 기준 확정값. 현장 모바일 맥락(가독성·터치·상태 구분)에 맞춰 역할을 배정함.
 
 ## 색상 역할
 
 | 역할 | 팔레트 키 | Hex | 용도 |
 |------|----------|-----|------|
-| primary | color.brand.600 | #7f56d9 | 주요 버튼, 링크, 진행·선택 강조 |
-| primary-pressed | color.brand.700 | #6941c6 | 버튼 pressed(모바일) |
-| primary-subtle | color.brand.50 | #f9f5ff | 칩·선택 배경, 포커스 링 배경색 연계 |
-| accent | color.blue.600 | #1570ef | 보조 강조(거리·정보 링크, 지도 등 2차 강조) |
-| surface | color.white | #ffffff | 카드·모달 패널 (gray.50에서 조정 — ΔL 8.6% 확보) |
-| surface-raised | color.white | #ffffff | 입력 필드 — 카드와 동일 fill이므로 border-subtle 1px로 구분 |
-| background | color.gray.100 | #f5f5f5 | 페이지 기본 배경 (gray.25에서 조정 — 카드와 명확한 대비) |
-| text-primary | color.gray.900 | #181d27 | 본문·제목 |
-| text-secondary | color.gray.500 | #717680 | 보조·메타 |
-| text-disabled | color.gray.300 | #d5d7da | 비활성 |
-| text-on-primary | color.white | #ffffff | primary 버튼 위 텍스트 |
-| border-subtle | border.color.subtle → gray.100 | #f5f5f5 | 섹션 구분·얇은 구분선 |
-| border-default | border.color.default → gray.300 | #d5d7da | 카드·인풋 기본 테두리 |
-| border-strong | border.color.strong → gray.500 | #717680 | 강조 구분선 |
-| border-focus | border.color.brand → brand.600 | #7f56d9 | 포커스·선택 테두리 |
-| success | color.success.600 | #039855 | 승인·동기 완료 |
-| warning | color.warning.500 | #f79009 | 필수 미충족·동기 대기 |
-| error | color.error.600 | #d92d20 | 오류·거절·파괴적 확인 |
-| error-subtle | color.error.50 | #fef3f2 | 오류 배너 배경 |
-| status-bar-success | color.success.600 | #039855 | 카드 좌측 상태 바 — 승인·완료 |
-| status-bar-warning | color.warning.500 | #f79009 | 카드 좌측 상태 바 — 대기·진행중 |
-| status-bar-error | color.error.600 | #d92d20 | 카드 좌측 상태 바 — 거절·오류 |
-| status-bar-default | color.gray.300 | #d5d7da | 카드 좌측 상태 바 — 기본·미시작 |
+| primary | brand.600 | #7F56D9 | 주요 버튼, 강조, 선택 상태 |
+| primary-hover | brand.700 | #6941C6 | 버튼 hover·pressed |
+| surface | white | #FFFFFF | 카드·시트·모달 등 기본 표면 |
+| surface-raised | gray.100 | #F5F5F5 | 텍스트 필드·셀렉트 등 입력 컨트롤 fill (흰 표면 위 계층 구분) |
+| background | gray.50 | #FAFAFA | 페이지 배경 |
+| text-primary | gray.900 | #181D27 | 본문·제목 텍스트 |
+| text-secondary | gray.600 | #535862 | 보조 텍스트·부가 설명 |
+| text-disabled | gray.400 | #A4A7AE | 비활성 텍스트·플레이스홀더 |
+| border | gray.300 | #D5D7DA | 구분선, 입력·카드 기본 테두리 (`border.color.default`와 동일) |
+| success | success.600 | #039855 | 성공·승인 상태 |
+| warning | warning.600 | #DC6803 | 경고·대기·주의 상태 |
+| error | error.600 | #D92D20 | 오류·거절 상태 |
+| accent | blue.600 | #1570EF | 링크·정보성 강조(브랜드 퍼플과 구분) |
 
 ## 타이포그래피
 
-모든 스케일 **fontFamily: Inter**(foundation 기준). 앱 배포 시 플랫폼 정책에 따라 SF Pro / Roboto로 치환 가능.
+| 역할 | foundation 스케일 | 크기 | 굵기 | 용도 |
+|------|-----------------|------|------|------|
+| heading | display xs — semibold | 24px | 600 | 화면 제목 |
+| subheading | text lg — semibold | 18px | 600 | 섹션·카드 제목 |
+| body | text md — regular | 16px | 400 | 본문·목록 본문 |
+| caption | text xs — regular | 12px | 400 | 타임스탬프·메타·범례 |
+| label | text sm — medium | 14px | 500 | 폼 레이블·칩 라벨 |
+| button | text md — semibold | 16px | 600 | 버튼·주요 인라인 액션 |
 
-| 역할 | foundation 스케일 (굵기) | 크기 | 줄간격 | 굵기 | 용도 |
-|------|-------------------------|------|--------|------|------|
-| heading | `display sm` · semibold | 30px | 38px | 600 | 화면 제목 |
-| subheading | `text xl` · semibold | 20px | 30px | 600 | 섹션 제목 |
-| body-strong | `text lg` · medium | 18px | 28px | 500 | 카드 제목·강조 한 줄 |
-| body | `text md` · regular | 16px | 24px | 400 | 본문·폼 입력 |
-| caption | `text sm` · regular | 14px | 20px | 400 | 보조·타임스탬프 |
-| meta | `text xs` · regular | 12px | 18px | 400 | 법적 고지·최소 메타 |
-| label | `text sm` · medium | 14px | 20px | 500 | 폼 레이블 |
-| button | `text md` · semibold | 16px | 24px | 600 | 버튼 라벨 |
-
-**화면 제목 예외**: 기본은 **`display sm` · semibold(30px)**. 제목이 두 줄 이상 자주 넘치는 화면만 **`text xl` · semibold(20px)** 로 바꿀 수 있다(전역 축소는 하지 않음).
+**폰트 패밀리**: foundation 기준 **Inter** (플랫폼별 시스템 폰트 대체 시 동일 역할·크기·굵기 유지).
 
 ## 간격 & 반경
 
-`spacing`·`radius`는 foundation 수치 그대로다.
+- 기본 내부 padding: **spacing.xl** (16px)
+- 섹션 간 gap: **spacing.3xl** (24px)
+- 카드 radius: **radius.lg** (10px)
+- 버튼 radius: **radius.md** (8px)
 
-- 기본 내부 padding: **spacing.xl (16px)** — 카드·리스트 행·모달 본문
-- 조밀한 패딩: **spacing.lg (12px)** — 칩·작은 행
-- 섹션 간 gap: **spacing.3xl (24px)**
-- 리스트 항목 간 gap: **spacing.lg (12px)**
-- 화면 좌우 안전 영역: **spacing.xl (16px)** (노치는 플랫폼 가이드 추가)
-- 테두리 두께: **border.width.default (1px)**, 강조 시 **border.width.medium (2px)**
-- 카드 radius: **radius.xl (12px)**
-- 버튼·칩 radius: **radius.md (8px)**
-- 모달·시트 상단: **radius.2xl (16px)**
-- 카드 좌측 상태 바: **너비 4px**, 좌측 모서리만 radius.xl (12px) 적용, 높이 = 카드 전체 높이
-- 섹션 헤더 좌측 바: **너비 3px**, 높이 = 제목 행 높이, radius 없음
+## 이펙트 토큰
+
+foundation `effect.shadow` 중 이 프로젝트 표준 매핑. (복합 그림자는 동일 토큰명으로 레이어 조합.)
+
+| 이름 | foundation 참조 | type | offset | blur | spread | color | alpha(≈) | 용도 |
+|------|------------------|------|--------|------|--------|-------|----------|------|
+| shadow-sm | shadow.xs | DROP_SHADOW | x:0 y:1 | 2 | 0 | #0A0D12 | 0.05 | 카드·입력창 |
+| shadow-md | shadow.md — 레이어 1 | DROP_SHADOW | x:0 y:4 | 8 | -2 | #0A0D12 | 0.10 | 바텀시트·드롭다운 |
+| shadow-lg | shadow.lg — 레이어 1 | DROP_SHADOW | x:0 y:12 | 16 | -4 | #0A0D12 | 0.08 | 플로팅 버튼·강조 오버레이 |
+
+**포커스 링**: 입력·접근성 — `effect.focus ring.4px primary-100` 또는 `4px gray-100` (컨텍스트에 맞게 선택).
+
+## 타이포그래피 세밀값
+
+| 역할 | line-height | letter-spacing |
+|------|------------|----------------|
+| heading | 32px | 0 |
+| body | 24px | 0 |
+| caption | 18px | 0 |
+| button | 24px | 0 |
+
+## 테두리
+
+- 기본 두께: **border.width.default** (1px)
+- 색상: border 역할 — **gray.300** (#D5D7DA)
 
 ## 아이콘
 
-- **크기 variant**: `icon.*` 컴포넌트에서 **sm / md / lg** (`icon-tokens.json` 내 플래그·피커 등 정의 참조).
-- **범용**: **icon.baseicon** — 카테고리 예: `navigation`, `action`, `communication`, `status`, `data` 등.
-- **피드백**: **icon.feedback** — `alertCircle`, `alertTriangle`, `checkCircle`, `zap` (성공·경고·강조).
-
-구급 화면에서 빈도 높은 baseicon 예: 뒤로 `chevronLeft`, 시간 `clock`, 위치 `mapPin`(정의 시), 편집 `edit`, 클라우드 `cloud` / `cloudOff`, 확인 `check`, 새로고침 `refreshCw` 등 — 실제 노드는 Figma Base icons 프레임 기준.
+- 기본 크기: **md** (행 내 보조는 sm, 강조 액션은 lg)
+- 주요 사용 카테고리: **baseicon** (navigation, action, communication, status), **feedback** (alert-circle, alert-triangle, check-circle, zap)
 
 ## 공통 패턴 목록
 
+2개 이상 화면에서 동일 목적·구조로 반복되는 UI 조각만 등록.
+
 | ID | 패턴명 | 설명 | 등장 화면 |
 |----|--------|------|----------|
-| PAT-001 | 케이스·동기화 헤더 | 케이스 라벨·시각·동기화/오프라인 배지 | G1, L1, L2, L4 |
-| PAT-002 | 동기화·네트워크 배너 | 한 줄 요약 + 재시도·자세히(M2) | G1, L1, L2, L4 |
-| PAT-003 | 업무 단계 스텝퍼 | 음성일지 → 증상·pre-KTAS → 이송 | G1, (L2/L4 상단 축약) |
-| PAT-004 | 하단 고정 주요 CTA 바 | 단일 주요 버튼 + 안전 영역 | G1, L1, L2, L4 |
-| PAT-005 | 2버튼 확인 모달 | 제목·본문·취소·주요 확인 | M1, M2, M3, M4, L2→L4 경고 |
-
-**L4 전용(인덱스 미등재)**: 병원 카드(여유병상·거리·의료과·신청·승인·출발) — screen-spec L4.
-
-## 이펙트 토큰 (foundation 실제 값)
-
-foundation `effect.shadow.*` 값을 Figma MCP `set_effects` 파라미터로 변환한 기준표.
-색상 base `#0a0d12` → r:0.039 g:0.051 b:0.071
-
-| 토큰 | 레이어 | offset y | radius | spread | alpha | 용도 |
-|------|--------|----------|--------|--------|-------|------|
-| effect.shadow.xs | 1개 | 1 | 2 | 0 | 0.051 | 구분선 대체 subtle 그림자 |
-| effect.shadow.sm | 2개 | L0: y1/r2 · L1: y1/r3 | — | 0 | L0:0.059 · L1:0.102 | **카드, 입력 필드** |
-| effect.shadow.md | 2개 | L0: y2/r4 · L1: y4/r8 | — | -2 | L0:0.059 · L1:0.102 | **하단 CTA 바, 드롭다운** |
-| effect.shadow.lg | 2개 | L0: y4/r6 · L1: y12/r16 | — | L0:-2 · L1:-4 | L0:0.031 · L1:0.078 | **모달 패널, 시트** |
-| effect.shadow.xl | 2개 | L0: y8/r8 · L1: y20/r24 | — | -4 | L0:0.031 · L1:0.078 | **플로팅 알림, 오버레이** |
-
-**Figma set_effects 변환 예시 — shadow.sm:**
-```
-effects: [
-  { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.059}, offset:{x:0,y:1}, radius:2, spread:0, visible:true },
-  { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.102}, offset:{x:0,y:1}, radius:3, spread:0, visible:true }
-]
-```
-
-**shadow.md:**
-```
-effects: [
-  { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.059}, offset:{x:0,y:2}, radius:4, spread:-2, visible:true },
-  { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.102}, offset:{x:0,y:4}, radius:8, spread:-2, visible:true }
-]
-```
-
-**shadow.lg:**
-```
-effects: [
-  { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.031}, offset:{x:0,y:4}, radius:6, spread:-2, visible:true },
-  { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.078}, offset:{x:0,y:12}, radius:16, spread:-4, visible:true }
-]
-```
-
-## 타이포그래피 세밀값 (자간 · 행간)
-
-행간은 타이포 표의 줄간격과 동일. 자간은 Inter 폰트 광학 기준.
-
-| 역할 | 크기 | 줄간격 (line-height) | 자간 (letter-spacing) | unit |
-|------|------|---------------------|----------------------|------|
-| heading | 30px | 38px | -0.6px | PIXELS |
-| subheading | 20px | 30px | -0.2px | PIXELS |
-| body-strong | 18px | 28px | 0px | PIXELS |
-| body | 16px | 24px | 0px | PIXELS |
-| caption | 14px | 20px | 0px | PIXELS |
-| label | 14px | 20px | 0px | PIXELS |
-| button | 16px | 24px | 0.1px | PIXELS |
-| meta | 12px | 18px | 0.1px | PIXELS |
-
----
-
-> 비주얼 방향(브랜드 톤, 레이아웃 스타일, 확정 디자인 결정 등)은
-> `design-system/visual-direction.mdc` 를 참조한다.
+| PAT-001 | 비동기·상태 카드 | 상태 배지, 시각(타임스탬프), 근거·사유·재시도 등 조건부 본문 블록 | G1, L1, L3 |
+| PAT-002 | 병원 행 카드 | 병원명·식별·한 줄 요약; L2는 체크 선택, L3는 승인 상태 배지로 동일 그리드 확장 | L2, L3 |
+| PAT-003 | 하단 요약 액션 바 | 선택 수·한 줄 요약 + 단일 주 CTA(필요 시 보조 텍스트 링크) | L2, L3 |
