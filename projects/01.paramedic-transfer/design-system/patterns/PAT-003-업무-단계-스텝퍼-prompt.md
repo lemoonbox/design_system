@@ -34,7 +34,7 @@
 | 속성 | 값 |
 |------|-----|
 | 크기 | 너비 100% × 높이 콘텐츠 허그 |
-| 배경 | surface — color.gray.50 #fafafa (rgba(250, 250, 250, 1)) |
+| 배경 | surface — color.white #ffffff (rgba(255, 255, 255, 1)) |
 | 배치 | 수직 스택(행 1: 스텝 아이콘+연결선, 행 2: 라벨) 또는 단일 행 3분할 auto-layout |
 | 주축 정렬 | 균등 분할(3등분) |
 | 교차축 정렬 | 중앙 |
@@ -94,8 +94,8 @@
 ### Surface Depth
 | 요소 | fill | 부모 fill | 대비 | 조치 |
 |------|------|----------|------|------|
-| 카드 래퍼 | surface #fafafa | background #fdfdfd | 충분 | — |
-| 스텝 배지(대기) | surface-raised #fff | surface #fafafa | 충분 | — |
+| 카드 래퍼 | surface white #ffffff | background #f5f5f5 | 충분 (ΔL 8.6%) | — |
+| 스텝 배지(대기) | surface-raised #fff | surface white | border-subtle로 구분 | — |
 
 ### Elevation
 | 요소 | 유형 | shadow 토큰 | 근거 |

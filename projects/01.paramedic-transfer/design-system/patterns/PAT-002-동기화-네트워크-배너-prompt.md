@@ -98,8 +98,8 @@
 ### Surface Depth
 | 요소 | fill | 부모/배경 fill | 대비 | 조치 |
 |------|------|--------------|------|------|
-| 배너 | error-subtle #fef3f2 | background #fdfdfd | 충분 | — |
-| 배너 | error-subtle #fef3f2 | surface #fafafa | 충분 | — |
+| 배너 | error-subtle #fef3f2 | background #f5f5f5 | 충분 | — |
+| 배너 | error-subtle #fef3f2 | surface white #ffffff | 충분 | — |
 
 ### Elevation
 | 요소 | 유형 | shadow 토큰 | 근거 (visual-direction) |

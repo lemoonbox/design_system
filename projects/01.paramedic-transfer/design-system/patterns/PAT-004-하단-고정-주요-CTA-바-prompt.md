@@ -91,7 +91,7 @@
 ### Surface Depth
 | 요소 | fill | 부모/배경 | 대비 | 조치 |
 |------|------|----------|------|------|
-| CTA 바 | surface-raised #fff | background #fdfdfd | 충분 | — |
+| CTA 바 | surface-raised #fff | background #f5f5f5 | 충분 (ΔL 8.6%) | — |
 | Primary 버튼 | brand.600 | 바 #fff | 충분 | — |
 
 ### Elevation

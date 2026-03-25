@@ -12,9 +12,9 @@
 | primary-pressed | color.brand.700 | #6941c6 | 버튼 pressed(모바일) |
 | primary-subtle | color.brand.50 | #f9f5ff | 칩·선택 배경, 포커스 링 배경색 연계 |
 | accent | color.blue.600 | #1570ef | 보조 강조(거리·정보 링크, 지도 등 2차 강조) |
-| surface | color.gray.50 | #fafafa | 카드·모달 패널 |
-| surface-raised | color.white | #ffffff | 입력 필드, 떠 있는 표면 |
-| background | color.gray.25 | #fdfdfd | 페이지 기본 배경(미세 대비) |
+| surface | color.white | #ffffff | 카드·모달 패널 (gray.50에서 조정 — ΔL 8.6% 확보) |
+| surface-raised | color.white | #ffffff | 입력 필드 — 카드와 동일 fill이므로 border-subtle 1px로 구분 |
+| background | color.gray.100 | #f5f5f5 | 페이지 기본 배경 (gray.25에서 조정 — 카드와 명확한 대비) |
 | text-primary | color.gray.900 | #181d27 | 본문·제목 |
 | text-secondary | color.gray.500 | #717680 | 보조·메타 |
 | text-disabled | color.gray.300 | #d5d7da | 비활성 |
@@ -27,6 +27,10 @@
 | warning | color.warning.500 | #f79009 | 필수 미충족·동기 대기 |
 | error | color.error.600 | #d92d20 | 오류·거절·파괴적 확인 |
 | error-subtle | color.error.50 | #fef3f2 | 오류 배너 배경 |
+| status-bar-success | color.success.600 | #039855 | 카드 좌측 상태 바 — 승인·완료 |
+| status-bar-warning | color.warning.500 | #f79009 | 카드 좌측 상태 바 — 대기·진행중 |
+| status-bar-error | color.error.600 | #d92d20 | 카드 좌측 상태 바 — 거절·오류 |
+| status-bar-default | color.gray.300 | #d5d7da | 카드 좌측 상태 바 — 기본·미시작 |
 
 ## 타이포그래피
 
@@ -58,6 +62,8 @@
 - 카드 radius: **radius.xl (12px)**
 - 버튼·칩 radius: **radius.md (8px)**
 - 모달·시트 상단: **radius.2xl (16px)**
+- 카드 좌측 상태 바: **너비 4px**, 좌측 모서리만 radius.xl (12px) 적용, 높이 = 카드 전체 높이
+- 섹션 헤더 좌측 바: **너비 3px**, 높이 = 제목 행 높이, radius 없음
 
 ## 아이콘
 

@@ -14,7 +14,7 @@ description: 구급 이송 조율 모바일 앱 비주얼 디렉션
 키워드: 신뢰, 명료, 효율
 
 - 장식적 그래픽·일러스트 사용 금지
-- 컬러 포인트는 최소화. 상태·행동에만 색상을 쓴다
+- 컬러 포인트는 기능적 위치에 한정. 상태·행동·구조 앵커에만 색상을 쓴다 (색상 분배 규칙 참조)
 - 여백은 넓게. 조밀한 정보 나열보다 빠른 스캔 우선
 
 ## 브랜드 방향
@@ -30,13 +30,70 @@ description: 구급 이송 조율 모바일 앱 비주얼 디렉션
 
 ## Elevation & Surface
 - **스타일**: 소프트 — 그림자로 깊이 표현, 테두리와 병용하지 않는다
-- **Surface 계층**: background(color.gray.25 #fdfdfd) → surface(color.gray.50 #fafafa) → surface-raised(white #ffffff)
+- **Surface 계층**: background(color.gray.100 #f5f5f5) → surface(color.white #ffffff) → surface-raised(white #ffffff + shadow.xs 또는 border-subtle)
 - 인접한 두 요소의 fill color는 달라야 한다 (계층 유지)
 - elevation 용도별 shadow 기준:
   - 카드·입력 필드 → effect.shadow.sm
   - 하단 CTA 바·드롭다운 → effect.shadow.md
   - 모달·시트 → effect.shadow.lg
   - 플로팅 알림·오버레이 → effect.shadow.xl
+
+## Surface 계층 실효성
+
+### 진단 결과
+
+| 계층 쌍 | 토큰 A | 토큰 B | Hex A | Hex B | ΔL | shadow 보상 | 판정 |
+|---------|--------|--------|-------|-------|-----|------------|------|
+| 배경 ↔ 카드 | ~~color.gray.25~~ → **color.gray.100** | ~~color.gray.50~~ → **color.white** | #f5f5f5 | #ffffff | 0.086 (8.6%) | shadow.sm alpha 합 0.161 | **충분** (조정 후) |
+| 카드 ↔ 입력면 | color.white | color.white + border-subtle | #ffffff | #ffffff | 0.000 | — | border-subtle(gray.100 1px)로 구분 |
+
+### 조정 이력
+
+| 역할 | 조정 전 | 조정 후 | 이유 |
+|------|--------|--------|------|
+| background | color.gray.25 (#fdfdfd) | **color.gray.100 (#f5f5f5)** | 기존 ΔL 2.5% → 8.6%로 개선. 육안 구분 확보 |
+| surface (카드) | color.gray.50 (#fafafa) | **color.white (#ffffff)** | 배경 위에서 카드가 명확히 떠 보임 |
+| surface-raised (입력면) | color.white (#ffffff) | 유지 + **border-subtle 1px** | 카드 배경과 동일해지므로 border로 구분. 카드 내부 구분은 border 허용 |
+
+### 최소 대비 규칙
+- 인접 surface 계층 간 ΔL ≥ 0.04 필수
+- ΔL 0.02~0.04 범위는 shadow alpha 합산 ≥ 0.15일 때만 허용
+- 새 토큰 도입 시 이 기준을 사전 검증한다
+
+## 색상 분배 규칙
+
+> 비주얼 톤(전문·명료) + 색상 철학(최소화 — 상태·행동에만)에서 도출.
+> CTA 버튼 이외에도 **기능적 색상 포인트**를 배치하되, 장식은 배제한다.
+
+### 색상 허용 위치
+
+| 위치 | 색상 | 역할 | 면적 |
+|------|------|------|------|
+| 카드 좌측 상태 바 | 상태별: success.600 / warning.500 / error.600 / gray.300(기본) | 카드 상태 즉시 인지 — 승인·대기·거절 등을 좌측 바로 즉시 구분 | 너비 4px × 카드 전체 높이, radius.xl 좌측만 |
+| 섹션 헤더 좌측 바 | primary brand.600 | 섹션 시작점 앵커 — 스크롤 시 현재 위치 인지 | 너비 3px × 제목 행 높이 |
+| 스텝퍼 노드 | primary(현재 단계) / success(완료) / gray.200(미완) | 업무 진행 상태 | 원형 28px |
+| 상태 배지 배경 | success-subtle / warning-subtle / error-subtle / primary-subtle | 상태 표시 칩 — 아이콘+문구 병행 필수 | 높이 24~28px 칩 |
+| 아이콘 강조 | accent(blue.600) 정보용, 상태색 피드백용 | 행 시작점 시각 앵커 | 아이콘 크기(16~24px) 내 |
+
+### 색상 금지 위치
+- 카드 전체 fill을 상태색으로 칠하지 않는다
+- 배경에 장식 컬러 블록을 넣지 않는다
+- 구분선에 primary/accent를 쓰지 않는다 (border-subtle만 허용)
+- 텍스트 본문에 primary를 쓰지 않는다 (링크·CTA 라벨만 예외)
+
+### 면적 예산 (화면당)
+- **primary fill 면**: CTA 버튼 1곳 + 소면적 강조 최대 3곳 (스텝퍼 노드, 섹션 바, 선택 배지)
+- **상태색**: 해당 상태가 존재하는 카드에만. 아이콘+문구 병행 필수
+- **accent**: 거리·링크 등 정보 보조 역할 한정
+
+### 카드 좌측 상태 바 색상 매핑 (구급 이송 도메인)
+
+| 상태 | 색상 토큰 | Hex | 적용 맥락 |
+|------|----------|-----|----------|
+| 승인·완료 | color.success.600 | #039855 | L4 병원 승인됨, G1 단계 완료 |
+| 대기·진행중 | color.warning.500 | #f79009 | L4 이송 신청 중, G1 단계 진행중 |
+| 거절·오류 | color.error.600 | #d92d20 | L4 병원 거절, 동기 실패 |
+| 기본·미시작 | color.gray.300 | #d5d7da | 미신청, 정보 카드 |
 
 ## 강조 방식
 - **크기 + 컬러 병행**: 타이포 크기 차이(heading → body)와 primary 컬러를 함께 사용
@@ -53,7 +110,9 @@ description: 구급 이송 조율 모바일 앱 비주얼 디렉션
 
 | 주제 | 결정 | 이유 요약 |
 |------|------|----------|
-| 페이지 배경 | color.gray.25 (#fdfdfd) | 카드·표면과 미세 대비, 조도 변화 시 화면 구역 구분 |
+| 페이지 배경 | color.gray.100 (#f5f5f5) | gray.25→gray.100 조정 — 카드와 ΔL 8.6% 확보, 육안 구분 명확 |
+| 카드 surface | color.white (#ffffff) | gray.50→white — 배경 위에서 카드가 명확히 떠 보임 |
+| 카드 좌측 상태 바 | 4px × 카드 높이, 상태색 매핑 | 상태 즉시 인지, 장갑 환경에서 색+위치로 스캔 |
 | Accent 컬러 | color.blue.600 (#1570ef) | primary(바이올렛)와 역할 분리, 정보성 링크에 익숙한 블루 |
 | 화면 제목 크기 | 전역 display sm 30px 유지 | 현장 단계 인지; 긴 제목 화면만 text xl 예외 허용 |
 | 포커스 링 | effect.focus ring 4px primary-100 | 폼·주요 버튼에 시각적 포커스 명시 |

@@ -56,7 +56,6 @@ agent는 다음 순서로 실행 계획을 수립한다:
 join_channel → channel: "{rvecoa2p}"
 get_node_info → nodeId: "{65:4639}"
 ```
-
 - 프레임 존재 확인
 - nextX 계산: `max(child.x + child.width) + 40` (없으면 0)
 - 오류 시 즉시 중단, nodeId 재확인 요청
