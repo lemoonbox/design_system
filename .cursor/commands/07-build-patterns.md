@@ -1,16 +1,5 @@
 # /build-patterns [PAT-ID]
 
-## 프로젝트 설정 (실행 전 여기를 먼저 채운다)
-
-```
-채널명:       rvecoa2p
-부모 프레임 nodeId:  42-4415
-```
-
-> 채널명과 nodeId는 프로젝트마다 다르다. 실행 전 반드시 확인하고 위 값을 수정한다.
-
----
-
 ## 인수
 - `[PAT-ID]` 생략 시: `_index.md` 전체 패턴을 순서대로 생성
 - `[PAT-ID]` 지정 시: 해당 패턴 1개만 생성 (PAT-001, pat001, pat01 → PAT-001로 정규화)
@@ -20,6 +9,7 @@
 **명세서에는 MCP 명령이 없다.** agent가 디자인 의도를 해석하고 `figma-tools.md`를 참조하여 실행 계획을 스스로 수립한다.
 
 ## 실행 전 읽기
+0. `.cursor/context/figma-project-config.md` — 프로젝트 설정 확인 (채널명, 부모 프레임 nodeId)
 1. `{프로젝트}/design-system/patterns/_index.md` — 대상 패턴 확인
 2. 대상 패턴의 `PAT-{ID}-{패턴명}-prompt.md` — **디자인 명세** (핵심 입력)
 3. `{프로젝트}/design-system/design-system.md` — 이펙트 토큰(shadow) 구체 값, 타이포 세밀값 확인
@@ -98,8 +88,8 @@ get_node_info → nodeId: "{부모 프레임 nodeId}"
 외부 frame 생성 → auto-layout → 하위 frame → 텍스트 → 아이콘 → elevation → 검증
 
 #### 투명 fill 처리
-- `fillColor: {r:0, g:0, b:0, a:0}` 지정 후 `get_node_info`로 fill 확인
-- fill이 `#ffffff`이면 `set_fill_color r:0 g:0 b:0 a:0` 재적용
+- `create_frame(fillColor: {r:0, g:0, b:0, a:0})` 직후 **무조건** `set_fill_color r:0 g:0 b:0 a:0` 재적용
+- `get_node_info`로 fill 확인하는 중간 단계 생략 (무조건 재적용이 더 빠르고 안전)
 
 #### 텍스트 생성 (모든 텍스트 노드에 필수)
 1. `create_text` — fontSize, fontWeight, fontColor 지정
@@ -132,22 +122,41 @@ get_node_info → nodeId: "{부모 프레임 nodeId}"
 - 부모 폭 채움 → 부모 width − paddingLeft − paddingRight 계산하여 숫자 입력
 - `counterAxisAlignItems: STRETCH` 미지원 → `MIN` + 자식에 `resize_node`
 
-### Step 4. 시각 검증 (필수)
+### Step 4. 검증 (선별적)
 
-```
-export_node_as_image → nodeId: {패턴 frame}, format: PNG, scale: 2
-```
+#### 4-a. 구조 검증 [선택]
+조건: 복잡한 레이아웃(3개 이상 영역) 또는 새로운 구조
+실행: export_node_as_image → 배치, 계층 확인
+체크:
+- [ ] 전체 레이아웃이 명세 다이어그램과 일치?
+- [ ] 요소 배치 순서가 맞는가?
+- [ ] 여백이 극단적이지 않은가?
 
-결과 이미지를 디자인 명세의 **"시각적 의도"** 섹션과 대조하여 확인:
-- [ ] 아이콘이 단색 블록이 아닌 원래 형태로 보이는가
-- [ ] 텍스트 크기·색상·굵기가 명세와 일치하는가
-- [ ] 레이아웃 정렬·간격이 의도대로인가
-- [ ] elevation(shadow)이 적용되었는가 (명세에 지정된 경우)
-- [ ] focal point가 명세의 "시각적 초점"과 일치하는가
-- [ ] Surface Depth — 인접 요소 간 fill 대비가 충분한가
+#### 4-b. 스타일 검증 [선택]
+조건: 색상/shadow 여러 개 적용 또는 변경 많은 경우
+실행: export_node_as_image → 색상 톤, 깊이감 확인
+체크:
+- [ ] 배경색이 명세 토큰과 일치?
+- [ ] 텍스트 색상이 올바른 역할?
+- [ ] shadow 적용 여부 (필요한 경우)?
 
-**문제 발견 시**: 해당 요소 `get_node_info` → 원인 파악 → 수정 → `export_node_as_image` 재검증
-**수정 불가 시**: 문제 내용을 구체적으로 사용자에게 보고
+#### 4-c. 최종 검증 [필수]
+조건: 모든 경우
+실행: export_node_as_image → 전체 시각 확인
+체크:
+- [ ] Visual Recipe 시각적 의도와 일치?
+- [ ] 색상 톤: 설계된 분위기가 나는가?
+- [ ] 초점(focal point) 명확한가?
+- [ ] 완성되었다는 느낌이 드는가?
+
+## 검증 생략 규칙
+
+다음 경우 구조/스타일 검증 스킵 가능:
+- 1줄 텍스트 + 아이콘 같은 극도로 단순한 경우
+- 이미 검증된 패턴의 색상/텍스트만 변경
+- 명세가 매우 상세한 경우 (레이아웃 동일)
+
+최종 검증은 항상 필수.
 
 ### Step 5. _index.md 노드 ID 기록
 

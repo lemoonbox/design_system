@@ -1,16 +1,5 @@
 # /build-screen {screen-id}
 
-## 프로젝트 설정 (실행 전 여기를 먼저 채운다)
-
-```
-채널명:        ysm85zx5
-부모 프레임 nodeId:  42-4415
-```
-
-> 채널명과 nodeId는 프로젝트마다 다르다. 실행 전 반드시 확인하고 위 값을 수정한다.
-
----
-
 ## 목적
 화면 **디자인 명세서**(`prompt/{screen-id}-*-prompt.md`)를 읽고 Figma에 화면을 생성한다.
 **명세서에는 MCP 명령이 없다.** agent가 디자인 의도를 해석하고 `figma-tools.md`를 참조하여 실행 계획을 수립한다.
@@ -18,6 +7,7 @@
 프롬프트 파일이 없으면 먼저 `/screen-prompt {screen-id}`를 실행한다.
 
 ## 실행 전 읽기
+0. `.cursor/context/figma-project-config.md` — 프로젝트 설정 확인 (채널명, 부모 프레임 nodeId)
 1. `{프로젝트}/prompt/{screen-id}-*-prompt.md` — **디자인 명세** (핵심 입력)
 2. `{프로젝트}/design-system/design-system.md` — 이펙트 토큰(shadow) 구체 값, 타이포 세밀값 확인
 3. `{프로젝트}/design-system/visual-direction.mdc` — 시각적 판단 기준
@@ -63,8 +53,8 @@ agent는 다음 순서로 실행 계획을 수립한다:
 ### Step 1. 사전 확인
 
 ```
-join_channel → channel: "{채널명}"
-get_node_info → nodeId: "{부모 프레임 nodeId}"
+join_channel → channel: "{rvecoa2p}"
+get_node_info → nodeId: "{65:4639}"
 ```
 
 - 프레임 존재 확인
@@ -107,7 +97,7 @@ Phase 4: 검증
 명세의 레이아웃 구조를 따라 frame 트리를 생성한다.
 - 화면 최상위 frame → 영역 frame → 하위 frame 순서
 - 각 frame에 auto-layout + padding + spacing 설정
-- fill color 적용 (투명은 `{r:0, g:0, b:0, a:0}` + 생성 후 fill 확인)
+- fill color 적용 (투명은 `{r:0, g:0, b:0, a:0}` + **무조건** `set_fill_color a:0` 재적용, 확인 생략)
 
 #### Phase 2: 콘텐츠 (Content)
 구조 위에 텍스트·아이콘·패턴을 배치한다.
@@ -141,37 +131,52 @@ Phase 4: 검증
 > 패턴 노드 ID가 비어있으면 `/build-patterns`가 먼저 필요. 사용자에게 알리고 중단.
 
 #### Phase 3: 시각 품질 (Visual Polish)
-디자인 명세의 "시각 품질 검증" 섹션을 기준으로 품질을 확인하고 보정한다.
+디자인 명세의 "Visual Recipe" 섹션을 기준으로 보정한다.
+Phase 2에서 이미 적용한 항목은 재검사하지 않는다.
 
-**Elevation**:
-- 명세의 "Elevation" 표에 shadow 토큰이 명시된 모든 요소에 `set_effects` 적용
-- 구체 파라미터는 `design-system.md` 이펙트 토큰 표에서 가져온다
+**Elevation** (Phase 2에서 미적용된 경우만):
+- 명세의 "Elevation" 표에 shadow 토큰이 명시된 요소 중 Phase 2에서 누락된 것만 `set_effects` 적용
 - shadow와 stroke가 동시에 적용된 요소가 있으면 stroke 제거
 
-**Surface Depth**:
-- 명세의 "Surface Depth" 표에서 "부족" 판정된 요소 확인
-- 해당 요소의 fill color 보정 또는 border-subtle 적용
+**Surface Depth** (명세에서 "부족" 판정된 경우만):
+- 명세의 "Surface Depth" 표에서 "부족" 판정된 요소만 fill color 보정 또는 border-subtle 적용
 
-**타이포 세밀값**:
-- 모든 텍스트 노드를 `scan_text_nodes`로 확인
-- set_font_name + set_line_height + set_letter_spacing가 빠진 텍스트 보완
+### Step 4. 검증 (선별적)
 
-### Step 4. 시각 검증 (필수)
+#### 4-a. 구조 검증 [선택]
+조건: 복잡한 다중 영역 또는 새로운 레이아웃 구조
+실행: export_node_as_image → 전체 프레임 배치, 영역 분리 확인
+체크:
+- [ ] 전체 레이아웃이 명세 다이어그램과 일치?
+- [ ] 각 영역 배치 순서가 맞는가?
+- [ ] 여백 리듬이 일관되는가?
 
-```
-export_node_as_image → nodeId: {화면 frame}, format: PNG, scale: 2
-```
+#### 4-b. 스타일 검증 [선택]
+조건: 색상/shadow 여러 개 또는 복잡한 surface depth
+실행: export_node_as_image → 색상 톤, 깊이감 확인
+체크:
+- [ ] 색상 계층이 명확한가 (배경 → 카드 → 요소 → 텍스트)?
+- [ ] 카드·모달에 shadow가 적용되어 깊이감이 있는가?
+- [ ] 색상 톤이 설계된 분위기와 일치?
 
-디자인 명세의 **"시각적 의도"** 섹션과 대조하여 확인:
-- [ ] 전체 분위기가 "시각적 의도"와 일치하는가
-- [ ] focal point가 명확하게 눈에 들어오는가
-- [ ] 아이콘이 정상 렌더되는가 (단색 블록 아님)
-- [ ] 카드·모달에 shadow가 적용되어 깊이감이 있는가
-- [ ] 텍스트 위계가 명확한가 (제목 > 본문 > 보조)
-- [ ] 색상 계층이 구분되는가 (배경 → 카드 → 요소 → 텍스트)
+#### 4-c. 최종 검증 [필수]
+조건: 모든 경우
+실행: export_node_as_image → 전체 시각 확인
+체크:
+- [ ] 전체 분위기가 "시각적 의도"와 일치?
+- [ ] focal point가 명확하게 눈에 들어오는가?
+- [ ] 아이콘이 정상 렌더되는가 (단색 블록 아님)?
+- [ ] 텍스트 위계가 명확한가 (제목 > 본문 > 보조)?
+- [ ] 완성되었다는 느낌이 드는가?
 
-결과 이미지를 사용자에게 보여주고 확인한다.
-**문제 발견 시**: 수정 → 재검증 루프.
+## 검증 생략 규칙
+
+다음 경우 구조/스타일 검증 스킵 가능:
+- 단일 영역 또는 극도로 단순한 화면
+- 이미 검증된 패턴만 적용
+- 명세가 매우 상세한 경우 (레이아웃 동일)
+
+최종 검증은 항상 필수. 결과 이미지를 검토하고 사용자에게 보고한다.
 
 ---
 

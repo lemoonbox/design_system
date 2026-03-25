@@ -2,301 +2,122 @@
 
 ## 메타
 - 등장 화면: G1, (L2/L4 상단 축약)
-- 구조: **음성·구급일지 → 증상·pre-KTAS → 이송** 3단계가 가로로 나열되고, 완료/진행/대기 상태가 반복된다.
+- 역할: 음성·구급일지 → 증상·pre-KTAS → 이송 병원·조율 흐름에서 현재 단계를 공유 언어로 고정한다.
+- 반복 구조: G1에서는 3스텝 전체 가시, L2/L4 상단에서는 동일 순서를 아이콘·라벨 축약으로 재사용한다.
+
+## 시각적 의도
+
+> 이 패턴은 **가로 단계 트랙**처럼 보인다. 사용자의 시선은 먼저 **현재 단계(브랜드 색 + 굵은 라벨)** 로 간다.
+
+- **전체 인상**: 3개의 스텝 노드가 동일 간격으로 배치되고, 완료 스텝은 success 톤, 미래 스텝은 muted 처리된다.
+- **시각적 초점**: 현재 진행 스텝의 라벨과 아이콘 tint.
+- **시각적 무게**: 현재 스텝 50% : 완료 30% : 미래 20%(한눈에 현재 위치 파악).
+- **디자인 핵심**: (1) 스텝 간 연결은 얇은 선(`border-subtle`)으로만 잇는다(shadow 없음). (2) 완료는 `check` 아이콘 + success로 색·형태 병행.
+
+---
 
 ## 사용 아이콘
 
-| 위치 | 아이콘명 | figmaId | 크기 | 색상 |
-|------|---------|---------|------|------|
-| 완료 단계 | checkCircle (`icon.feedback.tokens.checkCircle`) | 2:588 | 24×24 | success — color.success.600 #039855 (r:0.012 g:0.596 b:0.333 a:1) |
-| 단계 사이 구분 | chevronRight (`icon.baseicon.tokens.chevronRight`) | 2:602 | 16×16 | text-disabled — color.gray.300 #d5d7da (r:0.835 g:0.843 b:0.855 a:1) |
-
-> 진행 중·대기 **원형 마커**는 플레이스홀더 대신 `create_ellipse`로 단색 처리(아래 참조).
-
----
-
-## Figma 실행 지시
-
-### 외부 frame
-
-```
-create_frame
-  name: "PAT-003-업무-단계-스텝퍼"
-  parentId: 42-4415
-  x: 0
-  y: 0
-  width: 343
-  height: 88
-  fillColor: 투명 — (r:0 g:0 b:0 a:0)
-```
-
-```
-set_auto_layout
-  nodeId: {외부 frame nodeId}
-  layoutMode: VERTICAL
-  paddingTop: 0
-  paddingBottom: 0
-  paddingLeft: 0
-  paddingRight: 0
-  itemSpacing: 0
-  primaryAxisAlignItems: MIN
-  counterAxisAlignItems: MIN
-```
-
-> elevation 없음.
+| 위치 | 아이콘명 | figmaId | 크기 | 색상 역할 |
+|------|---------|---------|------|----------|
+| 스텝1 음성·일지 | `icon.baseicon.tokens.mic` | 2:938 | 24×24(G1) / 20×20(축약) | 현재: primary #7f56d9 · 완료: success #039855 · 대기: text-secondary #717680 |
+| 스텝2 증상·pre-KTAS | `icon.baseicon.tokens.clipboard` | 2:626 | 24×24 / 20×20 | 동일 규칙 |
+| 스텝3 이송·조율 | `icon.baseicon.tokens.truck` | 2:1208 | 24×24 / 20×20 | 동일 규칙 |
+| 완료 체크(노드 내부) | `icon.baseicon.tokens.check` | 2:593 | 14×14 | text-on-primary — color.white #ffffff (rgba(255, 255, 255, 1)) — 원형 배지 위 |
 
 ---
 
-### 단계 행 `stepper-track`
+## 레이아웃 구조
+
+### 전체 프레임 `업무 단계 스텝퍼`(G1 풀)
+
+| 속성 | 값 |
+|------|-----|
+| 크기 | 너비 100% × 높이 콘텐츠 허그 |
+| 배경 | surface — color.gray.50 #fafafa (rgba(250, 250, 250, 1)) |
+| 배치 | 수직 스택(행 1: 스텝 아이콘+연결선, 행 2: 라벨) 또는 단일 행 3분할 auto-layout |
+| 주축 정렬 | 균등 분할(3등분) |
+| 교차축 정렬 | 중앙 |
+| 내부 여백 | 상16 하16 좌16 우16 — spacing.xl |
+| 요소 간격 | 스텝 컬럼 간 0(연결선이 간격 담당) |
+| 모서리 | radius.xl — 12px(카드형으로 감쌀 경우) 또는 0(리스트 내장 시) |
+| 깊이 | effect.shadow.sm — 카드로 독립 프레임일 때만(visual-direction: 카드·입력 필드) |
+| 테두리 | 카드형일 때 shadow 사용 시 stroke 없음 |
+
+### 구조 다이어그램(G1)
 
 ```
-create_frame
-  name: "stepper-track"
-  parentId: {외부 frame nodeId}
-  width: 343
-  height: 88
-  fillColor: (r:0 g:0 b:0 a:0)
+┌─────────────────────────────────────────────┐  card optional
+│   (1) ——— (2) ——— (3)                       │
+│  음성·구급일지  증상·pre-KTAS  이송·조율      │
+└─────────────────────────────────────────────┘
 ```
 
-```
-set_auto_layout
-  nodeId: {stepper-track nodeId}
-  layoutMode: HORIZONTAL
-  paddingTop: 0
-  paddingBottom: 0
-  paddingLeft: 0
-  paddingRight: 0
-  itemSpacing: 8
-  primaryAxisAlignItems: CENTER
-  counterAxisAlignItems: CENTER
-```
+### 스텝 컬럼 `단일 단계`
 
----
+| 속성 | 값 |
+|------|-----|
+| 배치 | 수직 스택, 교차축 중앙 |
+| 요소 간격 | 8px — 스텝 아이콘과 라벨 사이(리듬용) |
 
-### `step-1` 열 (완료 예시)
+#### 내부 요소
 
-```
-create_frame
-  name: "step-1"
-  parentId: {stepper-track nodeId}
-  width: 100
-  height: 88
-  fillColor: (r:0 g:0 b:0 a:0)
-```
+| 요소 | 유형 | 내용 | 타이포 | 색상 |
+|------|------|------|--------|------|
+| 스텝 인덱스 배지 | 타원/원(선택) | 숫자 1·2·3 또는 아이콘만 | — | 현재: primary fill + text-on-primary / 완료: success fill + 흰 체크 / 대기: surface-raised stroke border-default |
+| 스텝 아이콘 | 아이콘 | mic / clipboard / truck | — | 현재 primary, 완료 success, 대기 text-secondary |
+| 스텝 라벨 | 텍스트 | "음성·구급일지" 등 | caption — 14px / 20px / 0px / 400 | 현재: text-primary #181d27 + 시각적 굵기(500)로 강조 가능 / 기타: text-secondary #717680 |
 
-```
-set_auto_layout
-  nodeId: {step-1 nodeId}
-  layoutMode: VERTICAL
-  itemSpacing: 8
-  primaryAxisAlignItems: MIN
-  counterAxisAlignItems: CENTER
-  paddingTop: 0
-  paddingBottom: 0
-  paddingLeft: 0
-  paddingRight: 0
-```
+### 연결선 `스텝 간`
 
-**아이콘 checkCircle**
-
-```
-create_frame
-  name: "icon-slot-s1"
-  parentId: {step-1 nodeId}
-  width: 24
-  height: 24
-  fillColor: (r:0 g:0 b:0 a:0)
-```
-
-```
-아이콘명: checkCircle
-figmaId: 2:588
-크기: 24×24
-색상: success (r:0.012 g:0.596 b:0.333 a:1)
-컨테이너: {icon-slot-s1 nodeId}
-```
-
-```
-create_text
-  name: "label-s1"
-  parentId: {step-1 nodeId}
-  text: "음성·일지"
-  fontSize: 12
-  fontWeight: 400
-  fontColor: text-secondary — color.gray.500 #717680 (r:0.443 g:0.463 b:0.502 a:1)
-```
-
-```
-set_font_name → fontFamily: Inter, style: Regular
-set_line_height → lineHeight: 18, unit: PIXELS
-set_letter_spacing → letterSpacing: 0.1, unit: PIXELS
-```
-
----
-
-### 구분 chevron A
-
-```
-create_frame
-  name: "chev-a-wrap"
-  parentId: {stepper-track nodeId}
-  width: 16
-  height: 24
-  fillColor: (r:0 g:0 b:0 a:0)
-```
-
-```
-아이콘명: chevronRight
-figmaId: 2:602
-크기: 16×16
-색상: text-disabled gray.300 (r:0.835 g:0.843 b:0.855 a:1)
-컨테이너: {chev-a-wrap nodeId}
-```
-
----
-
-### `step-2` 열 (진행 중 — 타원 마커)
-
-```
-create_frame
-  name: "step-2"
-  parentId: {stepper-track nodeId}
-  width: 100
-  height: 88
-  fillColor: (r:0 g:0 b:0 a:0)
-```
-
-```
-set_auto_layout
-  nodeId: {step-2 nodeId}
-  layoutMode: VERTICAL
-  itemSpacing: 8
-  primaryAxisAlignItems: MIN
-  counterAxisAlignItems: CENTER
-```
-
-```
-create_ellipse
-  name: "dot-current"
-  parentId: {step-2 nodeId}
-  width: 24
-  height: 24
-  fillColor: primary — color.brand.600 #7f56d9 (r:0.498 g:0.337 b:0.851 a:1)
-```
-
-```
-create_text
-  name: "label-s2"
-  parentId: {step-2 nodeId}
-  text: "증상·KTAS"
-  fontSize: 12
-  fontWeight: 500
-  fontColor: primary — color.brand.600 #7f56d9 (r:0.498 g:0.337 b:0.851 a:1)
-```
-
-```
-set_font_name → fontFamily: Inter, style: Medium
-set_line_height → lineHeight: 18, unit: PIXELS
-set_letter_spacing → letterSpacing: 0.1, unit: PIXELS
-```
-
----
-
-### 구분 chevron B
-
-동일 `chevronRight` 2:602, 16×16, gray.300 — 컨테이너 `chev-b-wrap`.
-
----
-
-### `step-3` 열 (대기 — 링 마커)
-
-```
-create_frame
-  name: "step-3"
-  parentId: {stepper-track nodeId}
-  width: 100
-  height: 88
-  fillColor: (r:0 g:0 b:0 a:0)
-```
-
-```
-set_auto_layout
-  nodeId: {step-3 nodeId}
-  layoutMode: VERTICAL
-  itemSpacing: 8
-  primaryAxisAlignItems: MIN
-  counterAxisAlignItems: CENTER
-```
-
-```
-create_ellipse
-  name: "dot-pending"
-  parentId: {step-3 nodeId}
-  width: 24
-  height: 24
-  fillColor: surface-raised — color.white #ffffff (r:1 g:1 b:1 a:1)
-```
-
-```
-set_stroke_color
-  nodeId: {dot-pending nodeId}
-  r: 0.835
-  g: 0.843
-  b: 0.855
-  a: 1
-  strokeWeight: 2
-```
-
-```
-create_text
-  name: "label-s3"
-  parentId: {step-3 nodeId}
-  text: "이송"
-  fontSize: 12
-  fontWeight: 400
-  fontColor: text-disabled — color.gray.300 #d5d7da (r:0.835 g:0.843 b:0.855 a:1)
-```
-
-```
-set_font_name → fontFamily: Inter, style: Regular
-set_line_height → lineHeight: 18, unit: PIXELS
-set_letter_spacing → letterSpacing: 0.1, unit: PIXELS
-```
-
-> 가로 합계: 100+16+100+16+100 = 332 — 부모 343이면 `resize_node`로 `stepper-track` 자식 간격을 조정하거나 좌우 패딩 5.5씩 외부 frame에 추가. 빌드 시 **343 맞춤**으로 `step-1/2/3` width를 각 102로 조정 가능(102×3+16×2=334 → 패딩 4).
+| 속성 | 값 |
+|------|-----|
+| 두께 | border.width.default 1px |
+| 색상 | 완료 구간: success #039855 / 미완료 구간: border-subtle #f5f5f5 |
 
 ---
 
 ## 변형 상태
 
-| 상태명 | 변경 항목 | 값 |
-|--------|----------|-----|
-| 1단계 진행 중 | step-1 마커 | checkCircle → `create_ellipse` 24px primary-subtle fill #f9f5ff (r:0.976 g:0.961 b:1 a:1) + 라벨 Medium primary |
-| 2·3단계 완료 | 해당 열 마커 | checkCircle(2:588) success + 라벨 caption text-secondary |
-| L2/L4 축약 | 높이·캡션 | 라벨 `meta` 12/18로 축소 시 `fontSize: 12`, `lineHeight: 18`, `letterSpacing: 0.1` 유지 |
+| 상태명 | 변경 대상 | 변경 내용 |
+|--------|----------|----------|
+| G1 풀 | 전체 | 3컬럼 + 라벨 2줄 허용 · 아이콘 24px · 카드형이면 shadow.sm |
+| L2/L4 축약 | 크기·카피 | 아이콘 20px · 라벨 한 줄 축약(예: "일지" / "증상" / "이송") · 배경 투명 또는 surface 유지 |
+| 스텝1 완료·2 현재 | 색·선 | 1–2 구간 연결선 success · 스텝1 아이콘 success + 체크 배지 |
+
+(레이아웃·스텝 개수 변경은 변형 아님 → 새 PAT ID)
 
 ---
 
-## Visual Recipe (정보 검증 — MCP 명령 없음)
+## 시각 품질 검증
 
-### Elevation 처리
-- 적용 여부: ❌ — 스텝퍼는 본문 플로우 안내용 평면 조합.
-- 적용된 shadow 토큰: 없음
+### Surface Depth
+| 요소 | fill | 부모 fill | 대비 | 조치 |
+|------|------|----------|------|------|
+| 카드 래퍼 | surface #fafafa | background #fdfdfd | 충분 | — |
+| 스텝 배지(대기) | surface-raised #fff | surface #fafafa | 충분 | — |
 
-### Surface Depth 검증
-- 이 패턴 루트 fill: 투명
-- 화면 배경 예상 fill: background gray.25 (#fdfdfd)
-- 대비 평가: **충분** (마커·라벨 색으로 단계 구분)
+### Elevation
+| 요소 | 유형 | shadow 토큰 | 근거 |
+|------|------|------------|------|
+| G1 카드 래퍼 | 카드 | effect.shadow.sm | visual-direction — 카드 |
+| 인라인(리스트 내) | — | 없음 | 상위 surface와 중복 elevation 방지 |
 
-### 강조 처리
-- focal point: **현재 단계** 라벨 + 채워진 마커(brand.600)
-- 처리 방식: 크기 동일 유지, **색상( primary ) + 굵기(Medium)** 으로 현재 단계만 강조
-- 근거: `visual-direction.mdc` 강조 방식
+### 타이포 위계
+| 수준 | 역할 | 스펙 | 적용 요소 |
+|------|------|------|----------|
+| 1 | caption(강조) | 14px / 20px / 0px / 500 | 현재 스텝 라벨 |
+| 2 | caption | 14px / 20px / 0px / 400 | 비현재 스텝 라벨 |
 
-### 밀도 검증
-- 터치 타겟: 스텝 자체는 정보 위주 — 탭 가능하면 44px 확보(현재 설계는 표시 위주)
-- 충족 여부: 스텝이 버튼이 아니면 ✅ / 버튼이면 각 열 높이·폭 재검증
+### 강조
+- focal point: 현재 스텝 — primary tint + 굵기/아이콘 크기
+- 상태 표현: 완료는 success + check 아이콘
+- 근거: visual-direction.mdc > 상태 색상 원칙
+
+### 밀도
+- 터치 가능 요소: 스텝 자체가 탭 네비게이션일 때 각 컬럼 히트 영역 최소 44px 높이
+- ❌ 미충족 시: 패딩 증가 또는 전 행을 탭 영역으로 확장
 
 ## 주의
-- `create_component` 금지
-- 생성 후 반환된 nodeId를 `_index.md`에 기입
+- 컴포넌트 변환 금지. frame으로만 생성
+- 생성 후 nodeId를 `_index.md`에 기입

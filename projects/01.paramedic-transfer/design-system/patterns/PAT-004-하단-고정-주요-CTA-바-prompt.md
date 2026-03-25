@@ -2,146 +2,116 @@
 
 ## 메타
 - 등장 화면: G1, L1, L2, L4
-- 구조: 화면 **하단 고정**에 **단일 주요 버튼**과 **하단 안전 영역**이 반복된다.
+- 역할: 화면별 **단 하나의 주요 행동**을 하단에 고정해 현장에서 실수 없이 탭하게 한다.
+- 반복 구조: 화면 최하단 safe area 위에 동일 구조의 단일 primary 버튼이 반복된다.
+
+## 시각적 의도
+
+> 이 패턴은 **떠 있는 단일 행동 바**처럼 보인다. 사용자의 시선은 스크롤 영역을 거친 뒤 **넓은 primary 버튼**에 안착한다.
+
+- **전체 인상**: 흰색(또는 surface-raised) 바에 한 개의 바이올렛 채움 버튼만 있다. 보조 버튼은 이 패턴에 넣지 않는다.
+- **시각적 초점**: primary 버튼 전체 — 면적 + brand 색 + button 타이포.
+- **시각적 무게**: primary 버튼 90% : 상단 얇은 구분(그림자) 10%.
+- **디자인 핵심**: (1) `effect.shadow.md`로 본문과 계층 분리. (2) 터치 타겟 최소 44px(visual-direction) 이상.
+
+---
 
 ## 사용 아이콘
 
-| 위치 | 아이콘명 | figmaId | 크기 | 색상 |
-|------|---------|---------|------|------|
-| (이 패턴 기본안) | 없음 | — | — | 주요 행동은 라벨 텍스트만 |
+| 위치 | 아이콘명 | figmaId | 크기 | 색상 역할 |
+|------|---------|---------|------|----------|
+| (선택) 버튼 선행 아이콘 | 문맥에 맞는 baseicon | 예: mic 2:938 | 20×20 | text-on-primary — color.white #ffffff |
 
-> 화면별로 아이콘+CTA가 필요하면 동일 바 안에 `icon.baseicon` 슬롯을 추가하는 **변형**으로 처리(레이아웃 구조 변경 시 새 PAT).
-
----
-
-## Figma 실행 지시
-
-### 외부 frame
-
-```
-create_frame
-  name: "PAT-004-하단-고정-주요-CTA-바"
-  parentId: 42-4415
-  x: 0
-  y: 0
-  width: 375
-  height: 120
-  fillColor: surface-raised — color.white #ffffff (r:1 g:1 b:1 a:1)
-```
-
-```
-set_auto_layout
-  nodeId: {외부 frame nodeId}
-  layoutMode: VERTICAL
-  paddingTop: 16
-  paddingBottom: 32
-  paddingLeft: 16
-  paddingRight: 16
-  itemSpacing: 0
-  primaryAxisAlignItems: MIN
-  counterAxisAlignItems: MIN
-```
-
-```
-set_corner_radius → nodeId: {외부 frame nodeId}, radius: 0
-```
-
-**elevation — effect.shadow.md** (`design-system.md`):
-
-```
-set_effects
-  nodeId: {외부 frame nodeId}
-  effects: [
-    { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.059}, offset:{x:0,y:2}, radius:4, spread:-2, visible:true },
-    { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.102}, offset:{x:0,y:4}, radius:8, spread:-2, visible:true }
-  ]
-```
-
-> 상단 구분은 **그림자만** — stroke 없음(`visual-direction`).
+*아이콘은 필수 아님. G1/L1 카피만으로 충분하면 생략.*
 
 ---
 
-### 주요 버튼 `primary-cta`
+## 레이아웃 구조
+
+### 전체 프레임 `하단 고정 주요 CTA 바`
+
+| 속성 | 값 |
+|------|-----|
+| 크기 | 너비 100% × 높이 콘텐츠 허그 + safe area 하단 inset(플랫폼 가이드) |
+| 배경 | surface-raised — color.white #ffffff (rgba(255, 255, 255, 1)) |
+| 배치 | 수직 스택 |
+| 주축 정렬 | 중앙 |
+| 교차축 정렬 | 스트레치(자식 버튼 width 100%) |
+| 내부 여백 | 상12 하12+(safe) 좌16 우16 — spacing.lg · spacing.xl |
+| 요소 간격 | 단일 버튼만 두면 0 |
+| 모서리 | 상단만 radius 없음(직선) — 바 전체 모서리는 화면에 맞춤 |
+| 깊이 | effect.shadow.md — 하단 CTA·드롭다운(visual-direction) |
+| 테두리 | 없음(shadow와 stroke 동시 사용 금지) |
+
+### 구조 다이어그램
 
 ```
-create_frame
-  name: "primary-cta"
-  parentId: {외부 frame nodeId}
-  width: 343
-  height: 48
-  fillColor: primary — color.brand.600 #7f56d9 (r:0.498 g:0.337 b:0.851 a:1)
+┌───────────────────────────────────┐
+│  ┌─────────────────────────────┐  │
+│  │   음성·구급 일지로          │  │  primary 버튼 full width
+│  └─────────────────────────────┘  │
+│  ░░░ safe area ░░░                │
+└───────────────────────────────────┘
 ```
 
-```
-set_auto_layout
-  nodeId: {primary-cta nodeId}
-  layoutMode: HORIZONTAL
-  paddingTop: 0
-  paddingBottom: 0
-  paddingLeft: 24
-  paddingRight: 24
-  itemSpacing: 0
-  primaryAxisAlignItems: CENTER
-  counterAxisAlignItems: CENTER
-```
+### 주요 버튼 `Primary CTA`
 
-```
-set_corner_radius → nodeId: {primary-cta nodeId}, radius: 8
-```
+| 속성 | 값 |
+|------|-----|
+| 크기 | 너비 100% · 높이 최소 48px(권장, 44px 이상 필수) |
+| 배경 | primary — color.brand.600 #7f56d9 (rgba(127, 86, 217, 1)) |
+| 모서리 | radius.md — 8px |
+| 깊이 | 없음(바 그림자가 담당) |
+| 테두리 | 없음 |
 
-```
-create_text
-  name: "cta-label"
-  parentId: {primary-cta nodeId}
-  text: "음성·구급 일지로"
-  fontSize: 16
-  fontWeight: 600
-  fontColor: text-on-primary — color.white #ffffff (r:1 g:1 b:1 a:1)
-```
+#### 내부 요소
 
-```
-set_font_name → nodeId: {cta-label nodeId}, fontFamily: Inter, style: SemiBold
-set_line_height → lineHeight: 24, unit: PIXELS
-set_letter_spacing → letterSpacing: 0.1, unit: PIXELS
-```
-
-> `resize_node`로 `primary-cta` width를 부모 가용폭 **343**(375−32)에 고정.
+| 요소 | 유형 | 내용 | 타이포 | 색상 |
+|------|------|------|--------|------|
+| 라벨 | 텍스트 | G1: "음성·구급 일지" / L1: "증상·pre-KTAS로" 등 화면별 | button — 16px / 24px / 0.1px / 600 | text-on-primary — color.white #ffffff |
+| 선행 아이콘(선택) | 아이콘 | mic 등 | — | text-on-primary #ffffff |
 
 ---
 
 ## 변형 상태
 
-| 상태명 | 변경 항목 | 값 |
-|--------|----------|-----|
-| pressed | fillColor | primary-pressed — color.brand.700 #6941c6 (r:0.412 g:0.255 b:0.776 a:1) |
-| disabled | fillColor + 텍스트 | fill gray.300 #d5d7da (r:0.835 g:0.843 b:0.855 a:1) · fontColor text-disabled 동일 톤 |
-| 보조 화면 카피 | `cta-label` 문자열만 | 예: "증상·pre-KTAS로", "다음" 등 화면별 치환 |
+| 상태명 | 변경 대상 | 변경 내용 |
+|--------|----------|----------|
+| 기본 | — | 위 스펙 그대로 |
+| pressed(모바일) | 버튼 fill | primary-pressed — color.brand.700 #6941c6 (rgba(105, 65, 198, 1)) |
+| disabled | 버튼 | fill: text-disabled 계열 배경 금지 — 대신 opacity 또는 별도 정책(구현 가이드는 제품 정의 따름). 문구: text-disabled #d5d7da |
+| 로딩 | 버튼 | 라벨 자리에 로딩 인디케이터(별도 노드), 터치 비활성 |
+
+(보조 버튼을 같은 바에 두는 구조는 본 PAT 범위 밖 → 새 패턴)
 
 ---
 
-## Visual Recipe (정보 검증 — MCP 명령 없음)
+## 시각 품질 검증
 
-### Elevation 처리
-- 적용 여부: ✅ — 하단 고정 바 → `visual-direction` **effect.shadow.md**
-- 적용된 shadow 토큰: effect.shadow.md
-- → MCP는 "외부 frame"에 포함됨
+### Surface Depth
+| 요소 | fill | 부모/배경 | 대비 | 조치 |
+|------|------|----------|------|------|
+| CTA 바 | surface-raised #fff | background #fdfdfd | 충분 | — |
+| Primary 버튼 | brand.600 | 바 #fff | 충분 | — |
 
-### Surface Depth 검증
-- 이 패턴 fill: surface-raised white (#ffffff)
-- 화면 배경 예상 fill: background gray.25 (#fdfdfd)
-- 대비 평가: **충분**
-- → stroke 불필요
+### Elevation
+| 요소 | 유형 | shadow 토큰 | 근거 (visual-direction) |
+|------|------|------------|----------------------|
+| 하단 바 | 플로팅 바 | effect.shadow.md | 하단 CTA 바 |
 
-### 강조 처리
-- focal point: `primary-cta` 단일 버튼
-- 처리 방식: primary fill + text-on-primary + 전역에서 **하나만** 주요 CTA
-- 근거: `visual-direction.mdc` 하단 CTA 패턴
+### 타이포 위계
+| 수준 | 역할 | 스펙 | 적용 요소 |
+|------|------|------|----------|
+| 1 | button | 16px / 24px / 0.1px / 600 | 버튼 라벨 |
 
-### 밀도 검증
-- 터치 타겟 최소: 44px
-- 이 패턴에서 터치 가능 요소: 버튼 높이 **48px**
-- 충족 여부: ✅
+### 강조
+- focal point: primary 버튼 — 유일한 채움 면적 + brand 색
+- 근거: visual-direction.mdc > 강조 방식, 하단 CTA 패턴 유지
+
+### 밀도
+- 터치 가능 요소: primary 버튼 — 높이 최소 44px — 권장 48px
+- ❌ 미충족 시: 세로 패딩 증가로 48px 이상 확보
 
 ## 주의
-- `create_component` 금지
-- 생성 후 반환된 nodeId를 `_index.md`에 기입
+- 컴포넌트 변환 금지. frame으로만 생성
+- 생성 후 nodeId를 `_index.md`에 기입

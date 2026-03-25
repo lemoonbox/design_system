@@ -5,9 +5,8 @@ alwaysApply: true
 # Figma 실행 원칙
 
 ## 실행 전 필수 확인
-1. `get_document_info` → 현재 문서 확인
-2. `get_pages` → 작업 대상 페이지 확인 후 `set_current_page`
-3. 패턴 참조 시 → `get_local_components` 또는 `get_node_info`로 노드 ID 확인
+1. `join_channel` → 채널 연결
+2. `get_node_info` → 부모 프레임 확인, nextX 계산
 
 ## 실행 순서 (항상 이 순서를 따른다)
 1. 외부 컨테이너 frame 생성 (`create_frame`)
@@ -15,15 +14,27 @@ alwaysApply: true
 3. 주요 영역 frame 생성 및 배치
 4. 콘텐츠 요소 추가 (텍스트, 도형)
    - 텍스트 노드: `create_text` 직후 `set_font_name` → fontFamily + style 지정 필수
-   - 투명 프레임: `create_frame` 직후 `get_node_info`로 fill 확인 → `#ffffff`이면 `set_fill_color a:0` 재적용
 5. 색상/스타일 적용
-6. 결과 검증 (`get_node_info`)
 
-## 안전 원칙
-- 노드 수정 전 반드시 `get_node_info`로 현재 상태 확인
+## 검증 원칙
+
+### 생성 흐름 — 사전 검증 생략
+- 직전 `create_*`로 생성한 노드를 수정할 때 사전 `get_node_info` **불필요** — agent가 nodeId를 이미 보유
+- 생성 → auto-layout → fill → text 등 연속 설정 시 중간 검증 없이 진행
+
+### 기존 노드 수정 — 사전 검증 필요
+- 이미 존재하던 노드를 수정할 때만 `get_node_info`로 현재 상태 확인
 - 기존 노드 대량 삭제 전 `get_nodes_info`로 대상 목록 확인
-- 실행 후 `get_node_info`로 결과 검증
-- `fillColor: transparent` 또는 `a:0`으로 지정해도 MCP가 `#ffffff`로 렌더할 수 있다. 생성 직후 반드시 fill 값 확인 후 필요 시 재적용
+
+### 단계별 배치 검증
+- 개별 MCP 호출마다 `get_node_info`를 하지 않는다
+- **구조 완성 후 1회** `get_node_info` 또는 `get_nodes_info`로 주요 노드를 일괄 검증
+- 최종 결과는 `export_node_as_image`로 시각 검증
+
+### 투명 fill 처리
+- `create_frame(fillColor: {r:0, g:0, b:0, a:0})` 직후 **무조건** `set_fill_color r:0 g:0 b:0 a:0` 재적용
+- `get_node_info`로 fill 값을 확인하는 중간 단계를 **생략**한다
+- MCP가 `#ffffff`로 렌더할 수 있으므로 무조건 재적용이 더 빠르고 안전하다
 
 ## 실패 시
 - 오류 메시지를 그대로 보고한다

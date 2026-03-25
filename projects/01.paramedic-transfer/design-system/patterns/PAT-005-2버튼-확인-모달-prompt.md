@@ -2,276 +2,154 @@
 
 ## 메타
 - 등장 화면: M1, M2, M3, M4, L2→L4 경고
-- 구조: **제목·본문** 아래 **취소(보조) + 확인(주요)** 2버튼이 모달 패널에서 반복된다.
+- 역할: 파괴적·되돌리기 어려운 행동 전에 **취소**와 **확인**을 명시적으로 선택하게 한다.
+- 반복 구조: 딤 배경 위 중앙(또는 하단 시트) 패널에 제목·본문·2버튼이 같은 순서로 배치된다.
+
+## 시각적 의도
+
+> 이 패턴은 **모달 카드 + 딤**처럼 보인다. 사용자의 시선은 **제목(subheading)** → **본문(body)** → **주요 확인 버튼** 순으로 이동한다.
+
+- **전체 인상**: 둥근 모서리 흰 패널이 화면 중앙에 떠 있고, 주변은 어두운 스크림. 하단에는 취소(고스트)·확인(primary)이 나란히 있다.
+- **시각적 초점**: 주요 확인 버튼 — primary fill + button 타이포.
+- **시각적 무게**: 확인 버튼 45% : 제목 30% : 본문 25%.
+- **디자인 핵심**: (1) 패널에 `effect.shadow.lg`로 시트·모달 계층 확보. (2) 스크림은 그림자가 아니라 별도 반투명 레이어로 처리.
+
+---
 
 ## 사용 아이콘
 
-| 위치 | 아이콘명 | figmaId | 크기 | 색상 |
-|------|---------|---------|------|------|
-| (기본 텍스트 모달) | 없음 | — | — | 파괴적 확인은 **변형**에서 error 톤만 적용 |
+| 위치 | 아이콘명 | figmaId | 크기 | 색상 역할 |
+|------|---------|---------|------|----------|
+| (선택) 제목 좌측 경고 | `icon.feedback.tokens.alertTriangle` | 2:472 | 24×24 | error 또는 warning — 문맥에 따라 error #d92d20 / warning #f79009 |
 
-> 경고 제목 옆 아이콘이 필요하면 `alertTriangle`(2:472) 또는 `alertCircle`(2:467)을 제목 행에 추가하는 변형으로 명시(구조 동일).
-
----
-
-## Figma 실행 지시
-
-### 외부 frame (모달 패널)
-
-```
-create_frame
-  name: "PAT-005-2버튼-확인-모달"
-  parentId: 42-4415
-  x: 0
-  y: 0
-  width: 311
-  height: 260
-  fillColor: surface — color.gray.50 #fafafa (r:0.98 g:0.98 b:0.98 a:1)
-```
-
-```
-set_auto_layout
-  nodeId: {외부 frame nodeId}
-  layoutMode: VERTICAL
-  paddingTop: 24
-  paddingBottom: 24
-  paddingLeft: 24
-  paddingRight: 24
-  itemSpacing: 16
-  primaryAxisAlignItems: MIN
-  counterAxisAlignItems: MIN
-```
-
-```
-set_corner_radius → nodeId: {외부 frame nodeId}, radius: 16
-```
-
-**elevation — effect.shadow.lg**
-
-```
-set_effects
-  nodeId: {외부 frame nodeId}
-  effects: [
-    { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.031}, offset:{x:0,y:4}, radius:6, spread:-2, visible:true },
-    { type:"DROP_SHADOW", color:{r:0.039,g:0.051,b:0.071,a:0.078}, offset:{x:0,y:12}, radius:16, spread:-4, visible:true }
-  ]
-```
-
-> 테두리 없음 — `visual-direction` (그림자만).
+*정보 확인형(M1 등)에서는 아이콘 생략 가능. 파괴적 경고에서는 삼각형 권장.*
 
 ---
 
-### 제목 `modal-title`
+## 레이아웃 구조
+
+### 전체 프레임 `2버튼 확인 모달`(뷰포트 단위)
+
+| 속성 | 값 |
+|------|-----|
+| 크기 | 너비 100% × 높이 100%(풀스크린 오버레이 컨테이너) |
+| 배경(스크림) | color.gray.900 #181d27 @ 약 40% 불투명도 — rgba(24, 29, 39, 0.4) *(팔레트 키 + 알파 명시)* |
+| 배치 | 수직+수평 중앙 정렬(모달 패널) |
+| 주요 자식 | `모달 패널` 프레임 1개 |
+
+### 모달 패널 `대화상자`
+
+| 속성 | 값 |
+|------|-----|
+| 크기 | 너비 = 화면 너비 − 좌우 spacing.3xl×2(24+24) 권장, 최대 폭 320–360px 모바일 기준 |
+| 배경 | surface-raised — color.white #ffffff (rgba(255, 255, 255, 1)) |
+| 배치 | 수직 스택 |
+| 주축 정렬 | 시작 |
+| 교차축 정렬 | 스트레치 |
+| 내부 여백 | 전체 spacing.xl — 16px |
+| 요소 간격 | 제목–본문 spacing.lg(12px), 본문–버튼 행 spacing.3xl(24px) |
+| 모서리 | radius.2xl — 16px(모달·시트 상단 기준과 통일) |
+| 깊이 | effect.shadow.lg — 모달·시트(visual-direction) |
+| 테두리 | 없음 |
+
+### 구조 다이어그램
 
 ```
-create_text
-  name: "modal-title"
-  parentId: {외부 frame nodeId}
-  text: "이송 출발 확인"
-  fontSize: 20
-  fontWeight: 600
-  fontColor: text-primary — color.gray.900 #181d27 (r:0.094 g:0.114 b:0.153 a:1)
+         ░░░░░░░ 딤 ░░░░░░░
+    ┌─────────────────────┐
+    │ 제목                │
+    │ 본문 문단…          │
+    │                     │
+    │ [ 취소 ] [ 확인 ]   │
+    └─────────────────────┘
 ```
 
-```
-set_font_name → nodeId: {modal-title nodeId}, fontFamily: Inter, style: SemiBold
-set_line_height → lineHeight: 30, unit: PIXELS
-set_letter_spacing → letterSpacing: -0.2, unit: PIXELS
-```
+### 헤더 행(선택)
 
-```
-resize_node → nodeId: {modal-title nodeId}, width: 263, height: 30
-```
+#### 내부 요소
 
-> 가용폭: 311 − 48 = **263**
+| 요소 | 유형 | 내용 | 타이포 | 색상 |
+|------|------|------|--------|------|
+| 경고 아이콘 | 아이콘 | alertTriangle (2:472) | — | error 또는 warning |
+| 제목 | 텍스트 | 예: "이송 출발 확인" | subheading — 20px / 30px / -0.2px / 600 | text-primary — color.gray.900 #181d27 |
 
----
+### 본문
 
-### 본문 `modal-body`
+#### 내부 요소
 
-```
-create_text
-  name: "modal-body"
-  parentId: {외부 frame nodeId}
-  text: "선택한 병원으로 출발을 확정합니다. 다른 병원에 대한 신청은 자동으로 취소됩니다."
-  fontSize: 16
-  fontWeight: 400
-  fontColor: text-secondary — color.gray.500 #717680 (r:0.443 g:0.463 b:0.502 a:1)
-```
+| 요소 | 유형 | 내용 | 타이포 | 색상 |
+|------|------|------|--------|------|
+| 설명 | 텍스트 | 예: 선택 병원·자동 취소 안내 | body — 16px / 24px / 0px / 400 | text-primary — color.gray.900 #181d27 |
+| 보조 목록 | 텍스트 | 불릿 목록 | body — 16px / 24px / 0px / 400 | text-primary #181d27 |
+| 법적 고지(선택) | 텍스트 | 한 줄 | meta — 12px / 18px / 0.1px / 400 | text-secondary — color.gray.500 #717680 |
 
-```
-set_font_name → fontFamily: Inter, style: Regular
-set_line_height → lineHeight: 24, unit: PIXELS
-set_letter_spacing → letterSpacing: 0, unit: PIXELS
-```
+### 버튼 행 `2버튼`
 
-```
-resize_node → nodeId: {modal-body nodeId}, width: 263, height: 72
-```
+| 속성 | 값 |
+|------|-----|
+| 배치 | 수평 스택 |
+| 주축 정렬 | 양끝 또는 균등 fill(동일 폭 1:1 권장) |
+| 교차축 정렬 | 중앙 |
+| 요소 간격 | spacing.lg — 12px |
 
----
+#### 내부 요소
 
-### 버튼 행 `modal-actions`
+| 요소 | 유형 | 내용 | 타이포 | 색상 |
+|------|------|------|--------|------|
+| 취소 버튼 | 텍스트 버튼 | "취소" | button — 16px / 24px / 0.1px / 600 | text-secondary #717680 · 배경 투명 또는 surface #fafafa |
+| 주요 확인 | 텍스트 버튼 | "출발 확정" 등 | button — 16px / 24px / 0.1px / 600 | text-on-primary #ffffff · 배경 primary #7f56d9 |
 
-```
-create_frame
-  name: "modal-actions"
-  parentId: {외부 frame nodeId}
-  width: 263
-  height: 48
-  fillColor: (r:0 g:0 b:0 a:0)
-```
+**취소 버튼 스타일(권장)**: fill surface #fafafa, stroke border-default #d5d7da 1px, radius.md 8px, 높이 48px.  
+**확인 버튼**: fill primary #7f56d9, stroke 없음, radius.md 8px, 높이 48px.
 
-```
-set_auto_layout
-  nodeId: {modal-actions nodeId}
-  layoutMode: HORIZONTAL
-  paddingTop: 0
-  paddingBottom: 0
-  paddingLeft: 0
-  paddingRight: 0
-  itemSpacing: 12
-  primaryAxisAlignItems: MIN
-  counterAxisAlignItems: CENTER
-```
-
-> 각 버튼 폭: (263 − 12) / 2 = **125** (반올림).
-
----
-
-### 보조 버튼 `btn-cancel`
-
-```
-create_frame
-  name: "btn-cancel"
-  parentId: {modal-actions nodeId}
-  width: 125
-  height: 48
-  fillColor: surface-raised — color.white #ffffff (r:1 g:1 b:1 a:1)
-```
-
-```
-set_corner_radius → nodeId: {btn-cancel nodeId}, radius: 8
-```
-
-```
-set_stroke_color
-  nodeId: {btn-cancel nodeId}
-  r: 0.835
-  g: 0.843
-  b: 0.855
-  a: 1
-  strokeWeight: 1
-```
-
-```
-set_auto_layout
-  nodeId: {btn-cancel nodeId}
-  layoutMode: HORIZONTAL
-  primaryAxisAlignItems: CENTER
-  counterAxisAlignItems: CENTER
-  paddingTop: 0
-  paddingBottom: 0
-  paddingLeft: 16
-  paddingRight: 16
-```
-
-```
-create_text
-  name: "label-cancel"
-  parentId: {btn-cancel nodeId}
-  text: "취소"
-  fontSize: 16
-  fontWeight: 600
-  fontColor: text-primary — color.gray.900 #181d27 (r:0.094 g:0.114 b:0.153 a:1)
-```
-
-```
-set_font_name → fontFamily: Inter, style: SemiBold
-set_line_height → lineHeight: 24, unit: PIXELS
-set_letter_spacing → letterSpacing: 0.1, unit: PIXELS
-```
-
----
-
-### 주요 버튼 `btn-confirm` (기본: primary)
-
-```
-create_frame
-  name: "btn-confirm"
-  parentId: {modal-actions nodeId}
-  width: 126
-  height: 48
-  fillColor: primary — color.brand.600 #7f56d9 (r:0.498 g:0.337 b:0.851 a:1)
-```
-
-```
-set_corner_radius → nodeId: {btn-confirm nodeId}, radius: 8
-```
-
-```
-set_auto_layout
-  nodeId: {btn-confirm nodeId}
-  layoutMode: HORIZONTAL
-  primaryAxisAlignItems: CENTER
-  counterAxisAlignItems: CENTER
-  paddingTop: 0
-  paddingBottom: 0
-  paddingLeft: 16
-  paddingRight: 16
-```
-
-```
-create_text
-  name: "label-confirm"
-  parentId: {btn-confirm nodeId}
-  text: "출발 확정"
-  fontSize: 16
-  fontWeight: 600
-  fontColor: text-on-primary — color.white #ffffff (r:1 g:1 b:1 a:1)
-```
-
-```
-set_font_name → fontFamily: Inter, style: SemiBold
-set_line_height → lineHeight: 24, unit: PIXELS
-set_letter_spacing → letterSpacing: 0.1, unit: PIXELS
-```
+*visual-direction: 카드는 shadow 또는 border 택1 — 본 패턴 패널은 shadow 사용, 내부 버튼은 얇은 stroke 허용(패널과 동일 레이어 규칙 아님).*
 
 ---
 
 ## 변형 상태
 
-| 상태명 | 변경 항목 | 값 |
-|--------|----------|-----|
-| 파괴적 확인(M3 등) | btn-confirm fill + (선택) 아이콘 | fill error #d92d20 (r:0.851 g:0.176 b:0.125 a:1) · 제목 행에 alertTriangle(2:472) |
-| 동기화 오류(M2) | 카피·주요 라벨 | "다시 시도" / "닫기" 등 문자열만 치환 · 주요 버튼은 primary 유지 가능 |
-| pressed(주요) | fillColor | primary-pressed #6941c6 (r:0.412 g:0.255 b:0.776 a:1) |
+| 상태명 | 변경 대상 | 변경 내용 |
+|--------|----------|----------|
+| 기본 | — | 위 레이아웃 |
+| 파괴적 확인 | 헤더 | 아이콘 alertTriangle + 제목 강조 · 확인 버튼 라벨을 동사 명확화(예: "삭제", "종료") |
+| 동기화 오류(M2) | 본문 | 오류 요약 + 재시도 안내 · 확인을 "다시 시도" 등으로 변경 가능(카피만) |
+| 로딩 | 버튼 행 | 확인 버튼 disabled + 로딩 표시 |
+
+(버튼 3개 이상·구조 변경은 새 PAT ID)
 
 ---
 
-## Visual Recipe (정보 검증 — MCP 명령 없음)
+## 시각 품질 검증
 
-### Elevation 처리
-- 적용 여부: ✅ — 모달 패널 → **effect.shadow.lg**
-- 적용된 shadow 토큰: effect.shadow.lg
-- → MCP는 "외부 frame"에 포함됨
+### Surface Depth
+| 요소 | fill | 부모 | 대비 | 조치 |
+|------|------|------|------|------|
+| 패널 | surface-raised #fff | 스크림 어둡게 | 충분 | — |
+| 취소 버튼 | surface #fafafa | 패널 #fff | 충분 | — |
 
-### Surface Depth 검증
-- 이 패턴 fill: surface gray.50 (#fafafa)
-- 화면 배경 예상 fill(딤 뒤): background gray.25 (#fdfdfd) + 오버레이(별도 레이어)
-- 대비 평가: 패널 vs 페이지 **충분**; 딤은 별도 frame으로 처리(본 패턴 범위 아님).
+### Elevation
+| 요소 | 유형 | shadow 토큰 | 근거 |
+|------|------|------------|------|
+| 모달 패널 | 모달 | effect.shadow.lg | visual-direction |
+| 스크림 | 오버레이 | 없음(fill 알파) | 별도 레이어 |
 
-### 강조 처리
-- focal point: 주요 확인 버튼(`btn-confirm`)
-- 처리 방식: primary(또는 파괴적 시 error) fill + SemiBold 라벨
-- 근거: `visual-direction.mdc` 강조 방식
+### 타이포 위계
+| 수준 | 역할 | 스펙 | 적용 요소 |
+|------|------|------|----------|
+| 1 | subheading | 20px / 30px / -0.2px / 600 | 제목 |
+| 2 | body | 16px / 24px / 0px / 400 | 본문 |
+| 3 | meta | 12px / 18px / 0.1px / 400 | 법적 고지 |
+| 동일 | button | 16px / 24px / 0.1px / 600 | 두 버튼 |
 
-### 밀도 검증
-- 터치 타겟 최소: 44px
-- 이 패턴에서 터치 가능 요소: 각 버튼 **48px** 높이
-- 충족 여부: ✅
+### 강조
+- focal point: 주요 확인 버튼 — primary fill
+- 상태 표현: 경고형은 아이콘 + 문구 병행
+- 근거: visual-direction.mdc > 상태 표시, Elevation & Surface
+
+### 밀도
+- 터치 가능 요소: 취소·확인 각각 높이 48px — 44px 이상 충족
+- ❌ 미충족 시: 버튼 세로 패딩 증가
 
 ## 주의
-- `create_component` 금지
-- 실제 화면에서는 **딤 배경**을 패턴 외부에서 별도 frame으로 깔고, 본 패널을 중앙에 배치한다.
-- 생성 후 반환된 nodeId를 `_index.md`에 기입
+- 컴포넌트 변환 금지. frame으로만 생성
+- 생성 후 nodeId를 `_index.md`에 기입
