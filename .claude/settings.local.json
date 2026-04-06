@@ -5,7 +5,16 @@
       "WebFetch(domain:github.com)",
       "Bash(bun --version)",
       "Bash(bun install:*)",
-      "Bash(bun run:*)"
+      "Bash(bun run:*)",
+      "WebSearch",
+      "WebFetch(domain:developers.figma.com)",
+      "WebFetch(domain:www.figma.com)",
+      "WebFetch(domain:help.figma.com)",
+      "Bash(find C:Users문현철My-projectdesign_system -maxdepth 2 -name claude* -o -name CLAUDE*)",
+      "Bash(curl -s https://developers.figma.com/docs/figma-mcp-server/tools-and-prompts/)",
+      "Bash(curl -s https://raw.githubusercontent.com/figma/figma-mcp-server/main/README.md)",
+      "WebFetch(domain:mcpservers.org)",
+      "WebFetch(domain:blog.logrocket.com)"
     ]
   }
 }
